@@ -1,0 +1,144 @@
+{
+  "intro": "Pick a circuit. Follow one step at a time. The new wire in each step has a yellow glow and a NEW tag.",
+  "circuits": [
+    {
+      "id": "led",
+      "number": 1,
+      "title": "Panel + LED",
+      "summary": "Make light with the sun.",
+      "status": "ready",
+      "parts": ["Solar panel", "LED", "Resistor (100–220 Ω)", "3 alligator clips"],
+      "diagram": {
+        "height": 290,
+        "parts": [
+          { "id": "panel", "type": "panel", "x": 180, "y": 50, "label": "Solar panel" },
+          { "id": "res", "type": "resistor", "x": 130, "y": 170, "label": "Resistor" },
+          { "id": "led", "type": "led", "x": 200, "y": 196, "label": "LED" }
+        ],
+        "wires": [
+          { "id": "w1", "from": "panel.pos", "to": "res.a", "side": "+" },
+          { "id": "w2", "from": "res.b", "to": "led.anode", "side": "+", "via": [[130, 266], [190, 266]] },
+          { "id": "w3", "from": "led.cathode", "to": "panel.neg", "side": "-", "via": [[210, 266], [250, 266], [250, 96]] }
+        ]
+      },
+      "steps": [
+        { "text": "Find the two wires on the solar panel. Red is + (positive). Black is − (negative).", "highlightParts": ["panel"] },
+        { "text": "Use a red clip. Connect the panel's red (+) wire to one end of the resistor.", "wire": "w1" },
+        { "text": "Use a red clip. Connect the other end of the resistor to the LED's long leg (+).", "wire": "w2" },
+        { "text": "Use a black clip. Connect the LED's short leg (−) to the panel's black (−) wire.", "wire": "w3" },
+        { "text": "The loop is closed. Put the panel in bright sun. Look at the LED." }
+      ],
+      "success": "Great work! Electricity flows from +, through the resistor and LED, and back to −. You made a closed loop.",
+      "troubleshooting": [
+        "Is the panel in full, direct sun? Move it out of any shadow.",
+        "Is the LED's long leg on the red (+) side? If not, turn the LED around.",
+        "Is every clip biting bare metal, not plastic?",
+        "Is the resistor between the red (+) wire and the LED's long leg?",
+        "Are any clips touching each other? Pull them apart.",
+        "Try a different LED. This one may be burned out.",
+        "Still stuck? Ask your facilitator to check the circuit with you."
+      ]
+    },
+    {
+      "id": "motor",
+      "number": 2,
+      "title": "Panel + motor",
+      "summary": "Make the fan spin with the sun.",
+      "status": "ready",
+      "parts": ["Solar panel", "DC motor + fan", "2 alligator clips"],
+      "diagram": {
+        "height": 262,
+        "parts": [
+          { "id": "panel", "type": "panel", "x": 180, "y": 50, "label": "Solar panel" },
+          { "id": "motor", "type": "motor", "x": 180, "y": 204, "label": "Motor + fan" }
+        ],
+        "wires": [
+          { "id": "w1", "from": "panel.pos", "to": "motor.pos", "side": "+" },
+          { "id": "w2", "from": "motor.neg", "to": "panel.neg", "side": "-" }
+        ]
+      },
+      "steps": [
+        { "text": "Find the two wires on the solar panel. Red is + (positive). Black is − (negative).", "highlightParts": ["panel"] },
+        { "text": "Use a red clip. Connect the panel's red (+) wire to one metal tab on the motor. This is now the + tab.", "wire": "w1" },
+        { "text": "Use a black clip. Connect the other motor tab to the panel's black (−) wire.", "wire": "w2" },
+        { "text": "Put the panel in bright sun. If the fan does not start, give it a gentle push." }
+      ],
+      "success": "Nice! The motor turns electricity into motion. Want the fan to blow the other way? Swap the two clips on the motor.",
+      "troubleshooting": [
+        "Is the panel in full, direct sun? Move it out of any shadow.",
+        "Give the fan blades a gentle push. Some motors need help to start.",
+        "Is each clip biting a bare metal tab on the motor?",
+        "Can the fan spin freely? Make sure it is not rubbing on anything.",
+        "Are the two clips touching each other? Pull them apart.",
+        "Still stuck? Ask your facilitator to check the circuit with you."
+      ]
+    },
+    {
+      "id": "pump",
+      "number": 3,
+      "title": "Panel + water pump",
+      "summary": "Move water with the sun.",
+      "status": "coming-soon",
+      "parts": ["Solar panel", "Water pump", "2 alligator clips"]
+    },
+    {
+      "id": "two-parts",
+      "number": 4,
+      "title": "One panel, two parts",
+      "summary": "Run the fan and the LED at the same time.",
+      "status": "ready",
+      "parts": ["Solar panel", "DC motor + fan", "LED", "Resistor (100–220 Ω)", "5 alligator clips"],
+      "diagram": {
+        "height": 350,
+        "parts": [
+          { "id": "panel", "type": "panel", "x": 180, "y": 50, "label": "Solar panel" },
+          { "id": "motor", "type": "motor", "x": 180, "y": 166, "label": "Motor + fan" },
+          { "id": "res", "type": "resistor", "x": 130, "y": 242, "label": "Resistor" },
+          { "id": "led", "type": "led", "x": 200, "y": 262, "label": "LED" }
+        ],
+        "wires": [
+          { "id": "w1", "from": "panel.pos", "to": "motor.pos", "side": "+" },
+          { "id": "w2", "from": "motor.neg", "to": "panel.neg", "side": "-" },
+          { "id": "w3", "from": "motor.pos", "to": "res.a", "side": "+" },
+          { "id": "w4", "from": "res.b", "to": "led.anode", "side": "+", "via": [[130, 332], [190, 332]] },
+          { "id": "w5", "from": "led.cathode", "to": "motor.neg", "side": "-", "via": [[210, 332], [250, 332], [250, 166]] }
+        ]
+      },
+      "steps": [
+        { "text": "Find the two wires on the solar panel. Red is + (positive). Black is − (negative).", "highlightParts": ["panel"] },
+        { "text": "Use a red clip. Connect the panel's red (+) wire to one motor tab. This is now the + tab.", "wire": "w1" },
+        { "text": "Use a black clip. Connect the other motor tab (−) to the panel's black (−) wire. The fan should spin in the sun.", "wire": "w2" },
+        { "text": "Use a red clip. Connect the motor's + tab to one end of the resistor. Two clips can share one tab.", "wire": "w3" },
+        { "text": "Use a red clip. Connect the other end of the resistor to the LED's long leg (+).", "wire": "w4" },
+        { "text": "Use a black clip. Connect the LED's short leg (−) to the motor's − tab.", "wire": "w5" },
+        { "text": "Put the panel in bright sun. The fan and the LED should both work. Each part has its own path. This is called a parallel circuit." }
+      ],
+      "success": "Awesome! You built a parallel circuit. One panel powers two parts, and each part has its own path back to −.",
+      "troubleshooting": [
+        "Does each part work alone? Test Circuit 1 and Circuit 2 first.",
+        "Is the resistor's clip on the motor's + tab, the same tab as the red wire from the panel?",
+        "Is the LED's short leg (−) clipped to the motor's − tab?",
+        "Is the LED's long leg on the resistor side? If not, turn the LED around.",
+        "The motor uses a lot of power. In weak sun, the LED may be dim. Try brighter sun.",
+        "Are any clips touching each other? Pull them apart.",
+        "Still stuck? Ask your facilitator to check the circuit with you."
+      ]
+    },
+    {
+      "id": "two-panels",
+      "number": 5,
+      "title": "Two panels in parallel",
+      "summary": "Join two panels for more current.",
+      "status": "coming-soon",
+      "parts": ["2 solar panels", "DC motor + fan", "Alligator clips"]
+    },
+    {
+      "id": "full-system",
+      "number": 6,
+      "title": "Full miniAgriPV system",
+      "summary": "Power the light, fan, and pump over your plant.",
+      "status": "coming-soon",
+      "parts": ["Solar panel", "LED", "Resistor", "DC motor + fan", "Water pump", "Alligator clips"]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+.height-chart-svg { display: block; overflow: visible; max-width: none; }
+
+.hc-readout { margin: 0 0 6px; }
+.hc-plot { touch-action: pan-y; border-radius: 8px; }
+
+.hc-table { margin-top: 10px; }
+.hc-table summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.hc-table table { border-collapse: collapse; margin-top: 6px; min-width: 60%; }
+.hc-table th,
+.hc-table td { text-align: left; padding: 6px 12px 6px 0; border-bottom: 1px solid var(--line); }

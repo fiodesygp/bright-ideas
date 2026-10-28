@@ -1,0 +1,38 @@
+.circuit-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.part-label { font-size: 14px; font-weight: 700; fill: var(--ink); }
+.part-label-inverse { fill: #fff; }
+.part-highlight {
+  fill: var(--sun-soft);
+  stroke: var(--focus);
+  stroke-width: 3;
+  stroke-dasharray: 8 5;
+}
+
+.wire-line { fill: none; stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+.wire-pos .wire-line,
+.wire-pos .wire-clip { stroke: var(--wire-red); fill: var(--wire-red); }
+.wire-neg .wire-line,
+.wire-neg .wire-clip { stroke: var(--wire-black); fill: var(--wire-black); }
+.wire .wire-line { fill: none; }
+.wire-clip { stroke-width: 0; }
+.wire-new .wire-line { stroke-width: 6; }
+.wire-halo {
+  fill: none;
+  stroke: #ffc21a;
+  stroke-width: 18;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+.wire-pill { fill: #fff; stroke-width: 2.5; }
+.wire-pos .wire-pill { stroke: var(--wire-red); }
+.wire-neg .wire-pill { stroke: var(--wire-black); }
+.wire-new .wire-pill { stroke-width: 3; }
+.wire-pill-text { font-size: 15px; font-weight: 800; fill: var(--ink); }

@@ -1,0 +1,65 @@
+.home-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.home-hero img { border-radius: 14px; flex: none; }
+.home-hero h1 { margin: 0; }
+.home-tagline { margin: 0; color: var(--ink-2); }
+
+.driving-question {
+  background: var(--sun-soft);
+  border-left: 6px solid #8a6a00;
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+.driving-question h2 {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5c4700;
+  margin-bottom: 6px;
+}
+.driving-question p {
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.home-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.home-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 72px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-decoration: none;
+}
+.home-link:hover { border-color: var(--primary); background: var(--primary-soft); }
+.home-link-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+.home-link-icon svg { width: 28px; height: 28px; }
+.home-link-text { display: grid; gap: 2px; flex: 1; }
+.home-link-text strong { font-size: 1.1rem; color: var(--primary); }
+.home-link-text span { color: var(--ink-2); font-size: 0.98rem; }
+.home-link-arrow { flex: none; width: 22px; height: 22px; color: var(--primary); }

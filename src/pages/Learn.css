@@ -1,0 +1,99 @@
+.card-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+@media (min-width: 640px) {
+  .card-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.learn-item {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  background: var(--surface-2);
+  border-radius: calc(var(--radius) + 4px);
+  padding: 10px;
+}
+
+/* ---------- Flip card ---------- */
+
+.flip-card { perspective: 1200px; }
+.flip-inner {
+  display: grid;
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+}
+.flip-card.is-flipped .flip-inner { transform: rotateY(180deg); }
+.flip-face {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+}
+.flip-back {
+  transform: rotateY(180deg);
+  border-color: var(--primary);
+}
+.flip-face h3 { margin-bottom: 6px; }
+.flip-face h4 { margin: 6px 0 2px; font-size: 1rem; color: var(--primary); }
+.flip-face p { margin-bottom: 6px; }
+.flip-face .callout { margin: 6px 0; cursor: auto; }
+.flip-side { font-weight: 400; color: var(--ink-2); font-size: 0.9rem; }
+.flip-btn { margin-top: auto; align-self: flex-start; }
+.flip-face > .flip-btn { margin-top: auto; }
+.flip-face > :nth-last-child(2) { margin-bottom: 12px; }
+
+.part-photo {
+  display: grid;
+  place-items: center;
+  height: 150px;
+  margin-bottom: 10px;
+  background: var(--surface-2);
+  border-radius: 10px;
+}
+.part-photo img,
+.part-thumb { max-height: 130px; width: auto; max-width: 90%; }
+
+.concept-front {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 600;
+  min-height: 120px;
+}
+.concept-front svg { width: 44px; height: 44px; color: #8a6a00; }
+
+/* ---------- Quick check ---------- */
+
+.quick-check {
+  display: grid;
+  gap: 10px;
+  padding: 4px 6px 6px;
+}
+.qc-label {
+  display: block;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+}
+.chips-column { flex-direction: column; align-items: stretch; }
+.quick-check .btn { justify-self: start; }
+.quick-check fieldset:disabled .chip { cursor: default; }
+.quick-check fieldset:disabled .chip:not(:has(input:checked)) { opacity: 0.7; }
+.qc-result:empty { display: none; }

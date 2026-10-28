@@ -1,0 +1,44 @@
+{
+  "intro": "Check your plant. Fill in what you see. It takes about two minutes.",
+  "fields": {
+    "date": "Date",
+    "height": "Plant height",
+    "heightHelp": "Measure from the soil to the top of the plant.",
+    "leafCount": "Number of leaves",
+    "leafColor": "Leaf color",
+    "soil": "How does the soil feel?",
+    "soilHelp": "Push a finger into the soil, about 2 cm deep.",
+    "watered": "Did you water the plant today?",
+    "weather": "Weather",
+    "shade": "How much of the plant is in the panel's shade?",
+    "photo": "Photo (optional)",
+    "note": "Short note (optional)",
+    "reflection": "Think about it (optional)"
+  },
+  "leafColors": [
+    { "id": "dark-green", "label": "Dark green", "swatch": "#1e5b2e" },
+    { "id": "green", "label": "Green", "swatch": "#3e8e41" },
+    { "id": "light-green", "label": "Light green", "swatch": "#9bcb6b" },
+    { "id": "yellow", "label": "Yellow", "swatch": "#e8c547" },
+    { "id": "brown", "label": "Brown", "swatch": "#8b5a2b" }
+  ],
+  "soil": [
+    { "id": "dry", "label": "Dry", "help": "Crumbly and light." },
+    { "id": "damp", "label": "Damp", "help": "Cool and a bit sticky." },
+    { "id": "wet", "label": "Wet", "help": "Muddy or puddles." }
+  ],
+  "weather": [
+    { "id": "sunny", "label": "Sunny" },
+    { "id": "partly-cloudy", "label": "Partly cloudy" },
+    { "id": "cloudy", "label": "Cloudy" },
+    { "id": "rainy", "label": "Rainy" },
+    { "id": "windy", "label": "Windy" },
+    { "id": "very-hot", "label": "Very hot" }
+  ],
+  "shade": [
+    { "id": "none", "label": "None" },
+    { "id": "little", "label": "A little" },
+    { "id": "half", "label": "About half" },
+    { "id": "most", "label": "Most of it" }
+  ]
+}

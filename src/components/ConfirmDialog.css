@@ -1,0 +1,10 @@
+.confirm-dialog {
+  max-width: min(420px, calc(100vw - 32px));
+  border: 0;
+  border-radius: var(--radius);
+  padding: 20px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.confirm-dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+.confirm-dialog .btn-row { margin-top: 16px; justify-content: flex-end; }

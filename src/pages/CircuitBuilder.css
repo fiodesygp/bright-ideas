@@ -1,0 +1,94 @@
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--tap);
+  font-weight: 600;
+  margin: -8px 0 4px;
+}
+
+.needs { margin-bottom: 12px; }
+.needs summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--primary);
+}
+.needs ul { margin: 0 0 8px; padding-left: 22px; }
+
+.progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.progress-bar { height: 100%; background: var(--primary); transition: width 0.3s ease; }
+
+.step-heading:focus { outline: none; }
+
+.step-figure { margin: 0 0 12px; }
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 8px;
+  font-size: 0.92rem;
+  color: var(--ink-2);
+}
+.legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.swatch-line { display: inline-block; width: 22px; height: 4px; border-radius: 2px; }
+.swatch-line.pos { background: var(--wire-red); }
+.swatch-line.neg { background: var(--wire-black); }
+.swatch-glow { display: inline-block; width: 22px; height: 12px; border-radius: 6px; background: #ffc21a; }
+
+.instruction {
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.45;
+  background: var(--surface);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.step-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0;
+}
+.step-nav .btn { flex: 1 1 auto; }
+
+.circuit-page .callout h3 { margin: 0 0 4px; }
+.circuit-page h3:focus { outline: none; }
+
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.checklist label {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  min-height: var(--tap);
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.checklist input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  accent-color: var(--primary);
+}
+.checklist label:has(input:checked) { border-color: var(--primary); }
+.checklist label:has(input:checked) span { text-decoration: line-through; color: var(--ink-2); }

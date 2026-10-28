@@ -1,0 +1,168 @@
+{
+  "intro": "Tap a card or its button to flip it. Then try the quick check below it.",
+  "components": [
+    {
+      "id": "solar-panel",
+      "name": "Solar panel",
+      "partType": "panel",
+      "photo": null,
+      "imageAlt": "Drawing of a small solar panel with a red wire marked plus and a black wire marked minus.",
+      "whatItDoes": "It turns sunlight into electricity.",
+      "polarity": "Yes. The red wire is + (positive). The black wire is − (negative).",
+      "howToConnect": "Clip the red (+) wire to the + side of your part. Clip the black (−) wire to the − side.",
+      "watchOut": "Even a small shadow on the panel cuts its power a lot. Test in full sun.",
+      "quickCheck": {
+        "question": "Which wire on the solar panel is positive (+)?",
+        "options": [
+          { "id": "red", "text": "The red wire" },
+          { "id": "black", "text": "The black wire" },
+          { "id": "both", "text": "Both wires" }
+        ],
+        "answer": "red",
+        "hint": "Look at the front of this card again. Which color goes with +?",
+        "explain": "Red is + (positive). Black is − (negative)."
+      }
+    },
+    {
+      "id": "led",
+      "name": "LED",
+      "partType": "led",
+      "photo": null,
+      "imageAlt": "Drawing of an LED bulb with a long leg marked plus and a short leg marked minus.",
+      "whatItDoes": "It turns electricity into light.",
+      "polarity": "Yes. The long leg is + (positive). The short leg is − (negative).",
+      "howToConnect": "Connect the long leg toward the red (+) wire, with a resistor in between. Connect the short leg to the black (−) wire.",
+      "watchOut": "Always use a resistor with the LED. Too much current can burn it out.",
+      "quickCheck": {
+        "question": "Your LED does not light up. The long leg is clipped to the black (−) wire. What should you do?",
+        "options": [
+          { "id": "flip", "text": "Turn the LED around so the long leg goes to +" },
+          { "id": "remove-resistor", "text": "Take out the resistor" },
+          { "id": "cover", "text": "Cover the solar panel" }
+        ],
+        "answer": "flip",
+        "hint": "An LED only works one way. Which leg should go to +?",
+        "explain": "The long leg must face the + side. Flip it and the LED can light up."
+      }
+    },
+    {
+      "id": "resistor",
+      "name": "Resistor (100–220 Ω)",
+      "partType": "resistor",
+      "photo": null,
+      "imageAlt": "Drawing of a resistor: a small tan tube with colored stripes and a wire on each end.",
+      "whatItDoes": "It slows down the flow of electricity so parts like the LED stay safe.",
+      "polarity": "No. A resistor works either way around.",
+      "howToConnect": "Put it in the path to the LED. Clip one end to the + side. Clip the other end to the LED's long leg.",
+      "watchOut": "Use one between 100 and 220 ohms (Ω). The stripes show its value. Ask your facilitator if you are not sure.",
+      "quickCheck": {
+        "question": "Does it matter which way you turn a resistor?",
+        "options": [
+          { "id": "no", "text": "No. It works both ways." },
+          { "id": "yes-long", "text": "Yes. The long end must go to +." },
+          { "id": "yes-stripes", "text": "Yes. The stripes must face up." }
+        ],
+        "answer": "no",
+        "hint": "Look at the two ends of a resistor. Are they different?",
+        "explain": "Right. A resistor has no + or − side."
+      }
+    },
+    {
+      "id": "motor",
+      "name": "DC motor + fan",
+      "partType": "motor",
+      "photo": null,
+      "imageAlt": "Drawing of a small motor with a fan on top and two metal tabs, one marked plus and one marked minus.",
+      "whatItDoes": "It turns electricity into spinning, so the fan blows air.",
+      "polarity": "It runs either way. But if you swap + and −, it spins the other way.",
+      "howToConnect": "Clip the red (+) wire to one metal tab. Clip the black (−) wire to the other tab.",
+      "watchOut": "Keep fingers and hair away from the fan. If it does not start, give the blades a gentle push.",
+      "quickCheck": {
+        "question": "You swap the red and black clips on the motor. What happens?",
+        "options": [
+          { "id": "reverse", "text": "It spins the other way." },
+          { "id": "breaks", "text": "It breaks." },
+          { "id": "same", "text": "Nothing changes at all." }
+        ],
+        "answer": "reverse",
+        "hint": "The motor still gets power. What could change about the spin?",
+        "explain": "Yes. Swapping + and − makes the motor spin the other way."
+      }
+    },
+    {
+      "id": "pump",
+      "name": "Water pump",
+      "partType": "pump",
+      "photo": null,
+      "imageAlt": "Drawing of a small water pump with a tube on top and two wires, red marked plus and black marked minus.",
+      "whatItDoes": "It uses electricity to push water through a tube.",
+      "polarity": "Yes. The red wire is + (positive). The black wire is − (negative).",
+      "howToConnect": "Put the pump fully under water first. Then clip red to the panel's red (+) wire and black to the black (−) wire.",
+      "watchOut": "Never run the pump dry. It needs water inside to work and stay cool. Keep the clips dry.",
+      "quickCheck": {
+        "question": "What should you do before you connect the pump?",
+        "options": [
+          { "id": "water", "text": "Put the pump under water." },
+          { "id": "sun", "text": "Put the pump in the sun." },
+          { "id": "tube", "text": "Take off the tube." }
+        ],
+        "answer": "water",
+        "hint": "The pump needs something inside it to work and stay cool.",
+        "explain": "Yes. The pump must be under water before it runs."
+      }
+    },
+    {
+      "id": "clips",
+      "name": "Alligator clips",
+      "partType": "clip",
+      "photo": null,
+      "imageAlt": "Drawing of a wire with a spring clip shaped like an alligator's jaws on each end.",
+      "whatItDoes": "They are wires with spring clips on both ends. They connect parts without tools.",
+      "polarity": "The clip has no + or −. Use red clips for + and black clips for − so it is easy to check.",
+      "howToConnect": "Squeeze the clip open. Bite onto bare metal. Let go, then give a gentle tug.",
+      "watchOut": "Do not let clips touch each other. Touching clips can make a short circuit.",
+      "quickCheck": {
+        "question": "You clip onto a wire's plastic coating. Will electricity flow?",
+        "options": [
+          { "id": "no", "text": "No. The clip must touch bare metal." },
+          { "id": "yes", "text": "Yes. Plastic works fine." },
+          { "id": "sun", "text": "Only in bright sun." }
+        ],
+        "answer": "no",
+        "hint": "Electricity flows through metal. Does it flow through plastic?",
+        "explain": "Right. Plastic blocks electricity. Clip onto bare metal."
+      }
+    }
+  ],
+  "conceptsIntro": "These big ideas help you understand your kit.",
+  "concepts": [
+    {
+      "id": "circuit",
+      "title": "Circuit",
+      "teaser": "Why does a circuit need to be a loop?",
+      "body": "A circuit is a closed loop. Electricity leaves the + side of the panel. It goes through your parts. Then it comes back to the − side. If there is a gap, nothing works.",
+      "example": "Try it: unclip one wire. The LED turns off. You broke the loop."
+    },
+    {
+      "id": "polarity",
+      "title": "Polarity",
+      "teaser": "Why do some parts care which way they go?",
+      "body": "Polarity means a part has a + side and a − side. Some parts only work one way, like the LED. Others work both ways, like the resistor.",
+      "example": "On your kit, red means + and black means −."
+    },
+    {
+      "id": "voltage-current",
+      "title": "Voltage vs. current",
+      "teaser": "What is the difference between a push and a flow?",
+      "body": "Voltage is the push. It is how hard the panel pushes electricity. We measure it in volts (V). Current is the flow. It is how much electricity moves. We measure it in amps (A).",
+      "example": "Think of a hose. Voltage is the water pressure. Current is how much water comes out."
+    },
+    {
+      "id": "why-agripv",
+      "title": "Why agriPV?",
+      "teaser": "How can one sunny space do two jobs?",
+      "body": "AgriPV means growing plants and making solar power in the same space. The panel makes electricity. Its shade can keep plants cooler and help the soil hold water.",
+      "example": "Your kit is a tiny model of a solar farm with crops growing underneath."
+    }
+  ]
+}

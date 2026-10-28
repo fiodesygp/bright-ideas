@@ -1,0 +1,79 @@
+.choice-group {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.choice-group legend,
+.field-label {
+  display: block;
+  font-weight: 700;
+  padding: 0;
+  margin-bottom: 6px;
+}
+.field-help {
+  color: var(--ink-2);
+  font-size: 0.95rem;
+  margin: -2px 0 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 8px 14px 8px 10px;
+  border: 2px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  cursor: pointer;
+  user-select: none;
+}
+.chip:hover { background: var(--surface-2); }
+.chip input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.chip:has(input:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+.chip-mark {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  background: var(--surface);
+}
+.chip-swatch {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+}
+.chip-text { display: grid; line-height: 1.25; }
+.chip-text small { color: var(--ink-2); font-size: 0.85rem; font-weight: 400; }
+
+.chip:has(input:checked) {
+  border-color: var(--primary);
+  border-width: 3px;
+  padding: 7px 13px 7px 9px;
+  background: var(--primary-soft);
+  font-weight: 700;
+}
+.chip:has(input:checked) .chip-mark {
+  border-color: var(--primary);
+  background: var(--primary)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='m5 10 3.5 3.5L15 7' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    center / 16px no-repeat;
+}

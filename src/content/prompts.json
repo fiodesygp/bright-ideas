@@ -1,0 +1,14 @@
+{
+  "reflectionPrompts": [
+    { "id": "changed", "text": "What changed since your last check?" },
+    { "id": "shade-help", "text": "Do you think the panel's shade is helping your plant or hurting it? Why?" },
+    { "id": "soil-dry", "text": "Is the soil drying out faster or slower than you expected? Why?" },
+    { "id": "move-panel", "text": "If you could move the panel, where would you put it? Why?" },
+    { "id": "powered", "text": "What did the panel power today? How well did it work?" },
+    { "id": "family", "text": "How could a setup like this help a family in the desert?" },
+    { "id": "surprise", "text": "What surprised you today?" },
+    { "id": "next-test", "text": "What question do you want to test next?" },
+    { "id": "compare", "text": "Look at a classmate's plant. What is different about yours?" },
+    { "id": "water-need", "text": "How much water did your plant need this week? How do you know?" }
+  ]
+}
