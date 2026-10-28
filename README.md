@@ -72,6 +72,8 @@ The Dashboard's "Save as PDF" makes a tagged PDF that targets PDF/UA-1. It has r
 
 **Automatic:** `.github/workflows/pdf-ua.yml` runs on every push and pull request. It builds the app, exports a sample PDF with `scripts/pdf-sample.mjs`, and validates it with [veraPDF](https://verapdf.org) using the PDF/UA-1 profile. The sample PDF and the HTML report are saved as the `pdf-ua-sample` artifact on each run.
 
+> **For developers:** a red "PDF/UA check" means the Dashboard's PDF export has an accessibility problem. It does not block the site, which deploys separately. To see what failed, open the run under **Actions → PDF/UA check**, scroll to **Artifacts**, download `pdf-ua-sample`, and open `verapdf-report.html`.
+
 **By hand with veraPDF** (needs Java 11 or later):
 
 ```sh
