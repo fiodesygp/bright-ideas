@@ -92,6 +92,24 @@ export interface CircuitStep {
   alt?: string
 }
 
+export interface CircuitDiagramData {
+  height: number
+  /** Visible area left edge and width (defaults 30 and 300) */
+  viewX?: number
+  viewWidth?: number
+  parts: DiagramPart[]
+  wires: DiagramWire[]
+}
+
+/** A different setup to try when the main circuit does not work, shown under troubleshooting. */
+export interface CircuitFallback {
+  title: string
+  text: string
+  parts: string[]
+  steps: string[]
+  diagram: CircuitDiagramData
+}
+
 export interface Circuit {
   id: string
   number: number
@@ -99,17 +117,11 @@ export interface Circuit {
   summary: string
   status: 'ready' | 'coming-soon'
   parts: string[]
-  diagram?: {
-    height: number
-    /** Visible area left edge and width (defaults 30 and 300) */
-    viewX?: number
-    viewWidth?: number
-    parts: DiagramPart[]
-    wires: DiagramWire[]
-  }
+  diagram?: CircuitDiagramData
   steps?: CircuitStep[]
   success?: string
   troubleshooting?: string[]
+  fallback?: CircuitFallback
 }
 
 export interface CircuitsContent {

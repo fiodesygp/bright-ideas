@@ -2,7 +2,15 @@
 
 A companion web app for the **miniAgriPV kit**. 7th graders build a mini agrivoltaic system: a small solar panel above a plant, powering an LED, a DC motor fan, and a water pump with alligator clips.
 
-Live: https://fiodesygp.github.io/bright-ideas/
+## For facilitators
+
+- **Open the app:** https://fiodesygp.github.io/bright-ideas/
+- **Install it on a phone or tablet:** open the link once while online, then add it to the home screen.
+  - iPhone or iPad (Safari): tap **Share**, then **Add to Home Screen**.
+  - Android (Chrome): tap the **⋮** menu, then **Add to Home screen** (or **Install app**).
+  - After that, it opens like an app and works without internet.
+- **Privacy:** all data stays on the device. Log entries and photos are saved in the browser on that phone or tablet. Nothing is sent anywhere, and there are no accounts or tracking. Each device keeps its own log, so students on shared devices should save a PDF from their Dashboard before someone else uses it. **Settings → Clear all data** erases everything on that device.
+- **Before your first session:** check the kit facts in [FACILITATOR-CHECKLIST.md](FACILITATOR-CHECKLIST.md) against your real parts. Start with the first item: whether one panel can run the whole system.
 
 ## Features
 
@@ -58,6 +66,25 @@ Stack: React, TypeScript, Vite, React Router (HashRouter, so refreshes work on G
 
 Every color is a CSS variable in `src/index.css`, with a light set and a matching dark set. The dark set is used when Settings → Theme is "Dark", or when it is "System" and the device is dark. The brand colors (`--brand-green`, `--brand-lime`, `--brand-teal`) are for decoration only. They are about 2:1 on white, so text and buttons use the deeper `--primary` and `--teal-ink` shades, which meet WCAG AA. Circuit diagrams always draw on light `--paper`, so the red and black wires match the real kit in both themes.
 
+## Checking PDF accessibility
+
+The Dashboard's "Save as PDF" makes a tagged PDF that targets PDF/UA-1. It has real headings, a list, and paragraphs, with alt text on the chart and photos. Characters the embedded font can't draw (emoji, non-Latin scripts) are left out of the PDF only, and a line under that entry says so.
+
+**Automatic:** `.github/workflows/pdf-ua.yml` runs on every push and pull request. It builds the app, exports a sample PDF with `scripts/pdf-sample.mjs`, and validates it with [veraPDF](https://verapdf.org) using the PDF/UA-1 profile. The sample PDF and the HTML report are saved as the `pdf-ua-sample` artifact on each run.
+
+**By hand with veraPDF** (needs Java 11 or later):
+
+```sh
+npm run build && npx vite preview --port 4173 &
+npm i --no-save playwright && npx playwright install chromium
+node scripts/pdf-sample.mjs http://localhost:4173/bright-ideas/ sample.pdf
+verapdf --flavour ua1 sample.pdf     # prints PASS or FAIL; exit code 1 on FAIL
+```
+
+Install veraPDF from https://docs.verapdf.org/install/. You can also open any exported PDF in the veraPDF GUI and choose the "PDF/UA-1" profile.
+
+**By hand with PAC** (Windows): download the free [PAC (PDF Accessibility Checker)](https://pac.pdf-accessibility.org) and open an exported PDF. PAC checks PDF/UA and the Matterhorn Protocol, and its "Screen reader preview" shows the reading order. Some PAC checkpoints need a human to judge them, for example whether the alt text is meaningful. Review those by hand.
+
 ## Deployment
 
-Pushing to `main` runs `.github/workflows/deploy.yml`, which builds the app and deploys it to GitHub Pages. In the repo settings, Pages → Source must be set to **GitHub Actions**.
+Pushing to `main` runs `.github/workflows/deploy.yml`, which builds the app and deploys it to GitHub Pages. In the repo settings, Pages → Source must be set to **GitHub Actions**. The PDF/UA check runs as a separate workflow, so it never blocks a deploy.

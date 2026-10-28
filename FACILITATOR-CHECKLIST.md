@@ -4,6 +4,13 @@ The app makes specific claims about the miniAgriPV kit. Before students use it, 
 
 Paths are written as `file → JSON path`. All content files are in `src/content/`.
 
+## Test this first: one panel running the whole system
+
+- [ ] **One panel can run the LED, fan, and pump at the same time (Circuit 6).** This is the claim most likely to fail. Build Circuit 6 with one panel in ordinary classroom sun (not just bright noon sun) and check that all three parts work together.
+  - If it works, nothing to change. The claim is in `circuits.json → circuits[id="full-system"].steps[10]` and `.success`.
+  - If it doesn't, students get a **"Not enough power? Use two panels"** split setup in Circuit 6's troubleshooting. Panel A runs the pump, and panel B runs the fan and LED. Check that this split works with your kit too. It needs two panels and 7 clips. It lives in `circuits.json → circuits[id="full-system"].fallback` (`.text`, `.parts`, `.steps`, `.diagram`). The troubleshooting line that points to it is `.troubleshooting[1]`.
+  - If one panel never runs all three, consider making the split setup the main Circuit 6. Move its diagram and steps into `.diagram` and `.steps`.
+
 ## Solar panel
 
 - [ ] **The red wire is + and the black wire is −.**
@@ -51,8 +58,7 @@ Paths are written as `file → JSON path`. All content files are in `src/content
   - `circuits.json → circuits[id="two-parts"].steps[6]`, `.troubleshooting[4]`, `.success`
 - [ ] **Two panels in parallel give more current, so the fan spins faster or starts in weaker light (Circuit 5).** This only holds if both panels have the same voltage rating. Also check that the kit includes two panels.
   - `circuits.json → circuits[id="two-panels"].steps[5]`, `.success`, `.parts`
-- [ ] **One panel can run the LED, fan, and pump at the same time (Circuit 6, full system).** This is the most likely claim to fail. If your panel can't do it, change the steps to use two panels, or tell students to run one part at a time. The troubleshooting list already suggests both.
-  - `circuits.json → circuits[id="full-system"].steps[10]`, `.troubleshooting[1]`, `.success`
+- [ ] **The full system on one panel (Circuit 6).** See "Test this first" at the top.
 
 ## Alligator clips
 

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router'
 import { PageHeader } from '../components/PageHeading'
 import CircuitDiagram from '../components/diagram/CircuitDiagram'
 import { AlertIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, WarningIcon } from '../components/Icons'
-import { circuitsContent } from '../content'
+import { circuitsContent, type CircuitFallback } from '../content'
 import NotFound from './NotFound'
 import './CircuitBuilder.css'
 
@@ -167,6 +167,7 @@ function CircuitBuilder({ circuitId }: { circuitId?: string }) {
               <p className="field-help" aria-live="polite">
                 {checked.size} of {circuit.troubleshooting?.length ?? 0} checked
               </p>
+              {circuit.fallback && <Fallback fallback={circuit.fallback} />}
               <div className="step-nav">
                 <button type="button" className="btn" onClick={() => setOutcome('yes')}>
                   <CheckIcon width={20} height={20} /> It works now
@@ -180,5 +181,37 @@ function CircuitBuilder({ circuitId }: { circuitId?: string }) {
         </>
       )}
     </div>
+  )
+}
+
+function Fallback({ fallback }: { fallback: CircuitFallback }) {
+  const { diagram } = fallback
+  return (
+    <section className="fallback" aria-labelledby="fallback-title">
+      <h3 id="fallback-title">{fallback.title}</h3>
+      <p>{fallback.text}</p>
+      <details className="needs">
+        <summary>What you need ({fallback.parts.length} items)</summary>
+        <ul>{fallback.parts.map((p) => <li key={p}>{p}</li>)}</ul>
+      </details>
+      <figure className="step-figure">
+        <CircuitDiagram
+          parts={diagram.parts}
+          wires={diagram.wires}
+          height={diagram.height}
+          viewX={diagram.viewX}
+          viewWidth={diagram.viewWidth}
+          doneWireIds={diagram.wires.map((w) => w.id)}
+          caption="Split setup with two panels"
+        />
+        <figcaption className="legend">
+          <span><span className="swatch-line pos" aria-hidden="true" /> Red wire = <strong>+</strong> (positive)</span>
+          <span><span className="swatch-line neg" aria-hidden="true" /> Black wire = <strong>−</strong> (negative)</span>
+        </figcaption>
+      </figure>
+      <ol className="fallback-steps">
+        {fallback.steps.map((s, i) => <li key={i}>{s}</li>)}
+      </ol>
+    </section>
   )
 }

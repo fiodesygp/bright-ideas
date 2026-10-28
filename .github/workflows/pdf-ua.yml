@@ -1,0 +1,83 @@
+name: PDF/UA check
+
+# Exports a sample Dashboard PDF from the built app and validates it with
+# veraPDF against PDF/UA-1. Runs separately from the deploy, so a veraPDF
+# download problem never blocks a release.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pdf-ua:
+    runs-on: ubuntu-latest
+    env:
+      VERAPDF_VERSION: 1.30.3
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Install Playwright (Chromium)
+        run: |
+          npm i --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Export a sample PDF from the built app
+        run: |
+          npx vite preview --port 4173 --strictPort &
+          npx --yes wait-on@8 http://localhost:4173/bright-ideas/
+          node scripts/pdf-sample.mjs http://localhost:4173/bright-ideas/ sample.pdf
+
+      - name: Install veraPDF
+        run: |
+          curl -sSL -o verapdf-installer.zip https://software.verapdf.org/releases/verapdf-installer.zip
+          unzip -q verapdf-installer.zip
+          cat > auto-install.xml <<XML
+          <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+          <AutomatedInstallation langpack="eng">
+            <com.izforge.izpack.panels.htmlhello.HTMLHelloPanel id="welcome"/>
+            <com.izforge.izpack.panels.target.TargetPanel id="install_dir">
+              <installpath>$RUNNER_TEMP/verapdf</installpath>
+            </com.izforge.izpack.panels.target.TargetPanel>
+            <com.izforge.izpack.panels.packs.PacksPanel id="sdk_pack_select">
+              <pack index="0" name="veraPDF GUI" selected="true"/>
+              <pack index="1" name="veraPDF Mac and *nix Scripts" selected="true"/>
+              <pack index="2" name="veraPDF Validation model" selected="true"/>
+              <pack index="3" name="veraPDF Documentation" selected="false"/>
+              <pack index="4" name="veraPDF Sample Plugins" selected="false"/>
+            </com.izforge.izpack.panels.packs.PacksPanel>
+            <com.izforge.izpack.panels.install.InstallPanel id="install"/>
+            <com.izforge.izpack.panels.finish.FinishPanel id="finish"/>
+          </AutomatedInstallation>
+          XML
+          java -jar verapdf-greenfield-*/verapdf-izpack-installer-*.jar auto-install.xml
+          "$RUNNER_TEMP/verapdf/verapdf" --version
+
+      - name: Validate against PDF/UA-1
+        # veraPDF exits 1 when the file is not compliant.
+        run: |
+          "$RUNNER_TEMP/verapdf/verapdf" --flavour ua1 --format html sample.pdf > verapdf-report.html || status=$?
+          "$RUNNER_TEMP/verapdf/verapdf" --flavour ua1 --format text sample.pdf
+          exit ${status:-0}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pdf-ua-sample
+          path: |
+            sample.pdf
+            verapdf-report.html

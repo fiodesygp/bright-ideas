@@ -3,6 +3,7 @@
 // with alt text on the chart and photos.
 import PDFDocument from 'pdfkit'
 import { toBlob } from 'pdfkit/output'
+import { create as openFont, type Font } from 'fontkit'
 import regularUrl from '@fontsource/encode-sans/files/encode-sans-latin-400-normal.woff?url'
 import boldUrl from '@fontsource/encode-sans/files/encode-sans-latin-700-normal.woff?url'
 import { fromCm, type HeightUnit, type LogEntry } from '../data/db'
@@ -23,9 +24,46 @@ const INK_2 = '#4a524d'
 const GREEN = '#2e7d3e'
 const LIME = '#b2d35b'
 const GRID = '#e2e8e1'
+const MISSING_CHARS_NOTE = 'Some characters in this note only show in the app.'
 
-export async function exportPdf({ entries, plantName, unit }: Input, filename: string) {
+// Close stand-ins for punctuation the embedded font might lack.
+// Zero-width joiner and variation selectors: invisible parts of emoji sequences.
+const INVISIBLE = new Set(['\u200d', '\ufe0e', '\ufe0f'])
+
+const SUBSTITUTES: Record<string, string> = { '−': '-', '–': '-', '—': '-', '·': '-', '…': '...', '‘': "'", '’': "'", '“': '"', '”': '"' }
+
+/**
+ * The embedded font only covers Latin text, so emoji and non-Latin characters
+ * would print as empty boxes. This keeps what the font can draw and reports
+ * whether anything was dropped.
+ */
+function makeTextFilter(fonts: Font[]) {
+  const canDraw = (ch: string) => fonts.every((f) => f.hasGlyphForCodePoint(ch.codePointAt(0)!))
+  return (text: string) => {
+    let dropped = false
+    const out = Array.from(text)
+      .map((ch) => {
+        if (ch === '\n' || ch === ' ' || canDraw(ch)) return ch
+        const sub = SUBSTITUTES[ch]
+        if (sub) return sub
+        // Invisible joiners don't count as missing text on their own.
+        if (!INVISIBLE.has(ch)) dropped = true
+        return ''
+      })
+      .join('')
+      .replace(/[ \t]{2,}/g, ' ')
+      .replace(/ +\n/g, '\n')
+      .trim()
+    // Removing "fast 🌱!" leaves "fast !"; close that gap, but only when we removed something.
+    return { text: dropped ? out.replace(/ +([!?.,;:)])/g, '$1') : out, dropped }
+  }
+}
+
+export async function exportPdf({ entries, plantName: rawPlantName, unit }: Input, filename: string) {
   const [regular, bold] = await Promise.all([regularUrl, boldUrl].map((u) => fetch(u).then((r) => r.arrayBuffer())))
+  const pdfText = makeTextFilter([regular, bold].map((b) => openFont(new Uint8Array(b) as unknown as Buffer) as Font))
+  const safe = (text: string) => pdfText(text).text
+  const plantName = safe(rawPlantName) || 'My plant'
   const title = `Planting Log: ${plantName}`
 
   const doc = new PDFDocument({
@@ -41,6 +79,12 @@ export async function exportPdf({ entries, plantName, unit }: Input, filename: s
     // The browser build has no standard fonts, and PDF/UA needs embedded fonts anyway.
     font: regular as unknown as string,
   })
+  // pdfkit 0.20 marks PDF/UA as subset 1 and then also writes a PDF/A-1 style
+  // CIDSet for embedded fonts, which lists only the glyphs used and fails
+  // PDF/UA-1 (ISO 14289-1 7.21.4.2). PDF/UA does not need a CIDSet, and the
+  // CIDSet check is `=== 1`, so a string keeps the pdfuaid:part metadata at 1
+  // while skipping it. Verified with veraPDF (see README).
+  ;(doc as unknown as { subset: unknown }).subset = '1'
   const blob = toBlob(doc)
   doc.registerFont('Body', regular)
   doc.registerFont('Bold', bold)
@@ -55,10 +99,11 @@ export async function exportPdf({ entries, plantName, unit }: Input, filename: s
   }
   const heading = (tag: 'H1' | 'H2' | 'H3', text: string, size: number, color = INK) => {
     ensureSpace(size * 2.5)
-    root.add(doc.struct(tag, {}, () => doc.font('Bold').fontSize(size).fillColor(color).text(text, M, doc.y, { width: W })))
+    root.add(doc.struct(tag, {}, () => doc.font('Bold').fontSize(size).fillColor(color).text(safe(text), M, doc.y, { width: W })))
     doc.moveDown(0.3)
   }
-  const para = (text: string, size = 11, color = INK) => {
+  const para = (raw: string, size = 11, color = INK) => {
+    const text = safe(raw)
     doc.font('Body').fontSize(size)
     ensureSpace(doc.heightOfString(text, { width: W }) + 4)
     root.add(doc.struct('P', {}, () => doc.fillColor(color).text(text, M, doc.y, { width: W })))
@@ -88,7 +133,7 @@ export async function exportPdf({ entries, plantName, unit }: Input, filename: s
         stats.map((s) =>
           doc.struct('LI', {}, [
             doc.struct('LBody', {}, () =>
-              doc.font('Body').fontSize(11).fillColor(INK).text(`${s.label}${s.note ? ` (${s.note})` : ''}: `, M + 10, doc.y, { continued: true, width: W - 10 }).font('Bold').text(s.value),
+              doc.font('Body').fontSize(11).fillColor(INK).text(safe(`${s.label}${s.note ? ` (${s.note})` : ''}: `), M + 10, doc.y, { continued: true, width: W - 10 }).font('Bold').text(safe(s.value)),
             ),
           ]),
         ),
@@ -114,8 +159,9 @@ export async function exportPdf({ entries, plantName, unit }: Input, filename: s
     const photoH = 90
     const textX = photo ? M + photoW + 14 : M
     const textW = W - (textX - M)
+    const note = pdfText(e.note)
     doc.font('Body').fontSize(11)
-    const noteH = e.note ? doc.heightOfString(e.note, { width: textW }) : 0
+    const noteH = (note.text ? doc.heightOfString(note.text, { width: textW }) : 0) + (note.dropped ? 16 : 0)
     ensureSpace(Math.max(photo ? photoH : 0, 22 + noteH) + 22)
 
     const y0 = doc.y
@@ -125,9 +171,12 @@ export async function exportPdf({ entries, plantName, unit }: Input, filename: s
     const y = y0 + 10
 
     const label = `${formatDate(e.date, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} - ${heightText(e, unit)}`
-    root.add(doc.struct('H3', {}, () => doc.font('Bold').fontSize(12.5).fillColor(INK).text(label, textX, y, { width: textW })))
-    if (e.note) {
-      root.add(doc.struct('P', {}, () => doc.font('Body').fontSize(11).fillColor(INK).text(e.note, textX, doc.y + 2, { width: textW })))
+    root.add(doc.struct('H3', {}, () => doc.font('Bold').fontSize(12.5).fillColor(INK).text(safe(label), textX, y, { width: textW })))
+    if (note.text) {
+      root.add(doc.struct('P', {}, () => doc.font('Body').fontSize(11).fillColor(INK).text(note.text, textX, doc.y + 2, { width: textW })))
+    }
+    if (note.dropped) {
+      root.add(doc.struct('P', {}, () => doc.font('Body').fontSize(9.5).fillColor(INK_2).text(MISSING_CHARS_NOTE, textX, doc.y + 2, { width: textW })))
     }
     const textBottom = doc.y
     if (photo) {

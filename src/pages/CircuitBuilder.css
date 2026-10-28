@@ -109,3 +109,14 @@
 }
 .checklist label:has(input:checked) { border-color: var(--primary); }
 .checklist label:has(input:checked) span { text-decoration: line-through; color: var(--ink-2); }
+
+.fallback {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--surface);
+  border: 2px solid var(--brand-teal);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.fallback h3 { margin-top: 0; }
+.fallback-steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; }

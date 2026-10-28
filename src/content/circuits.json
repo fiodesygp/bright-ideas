@@ -679,11 +679,11 @@
                 302
               ],
               [
-                254,
+                266,
                 302
               ],
               [
-                254,
+                266,
                 160
               ]
             ]
@@ -794,13 +794,167 @@
       "success": "Amazing! One sunny space now shades a plant, waters it, cools it, and lights it. That is agrivoltaics. Show your family how it works.",
       "troubleshooting": [
         "Test each part alone first: Circuit 1 (LED), Circuit 2 (fan), and Circuit 3 (pump).",
-        "One panel may not have enough power for all three parts in weak sun. Unclip one part, or add a second panel in parallel (Circuit 5).",
+        "One panel may not have enough power for all three parts. Try the split setup below: one panel for the pump, one for the fan and LED.",
         "Is the pump all the way under water?",
         "Is the LED's long leg on the resistor side? If not, turn it around.",
         "Is every red clip on the + side and every black clip on the − side?",
         "Are any clips touching each other or the water? Pull them apart and dry them.",
         "Still stuck? Ask your facilitator to check the circuit with you."
-      ]
+      ],
+      "fallback": {
+        "title": "Not enough power? Use two panels",
+        "text": "If the parts are slow, dim, or don't run at all, split the work. Panel A runs the pump. Panel B runs the fan and the LED. Each panel only has to power part of the system.",
+        "parts": [
+          "2 solar panels",
+          "LED",
+          "Resistor (100–220 Ω)",
+          "DC motor + fan",
+          "Water pump",
+          "Cup of water",
+          "7 alligator clips"
+        ],
+        "steps": [
+          "Unclip every wire from the panel first.",
+          "Panel A + pump: use a red clip from panel A's red (+) wire to the pump's red (+) wire. Use a black clip from the pump's black (−) wire to panel A's black (−) wire. This is Circuit 3.",
+          "Panel B + fan + LED: use a red clip from panel B's red (+) wire to the motor's + tab, and a black clip from the motor's − tab to panel B's black (−) wire.",
+          "Still on panel B: clip the motor's + tab to the resistor, the resistor to the LED's long leg (+), and the LED's short leg (−) to the motor's − tab. This is Circuit 4.",
+          "Keep the clips away from the water. Put both panels in full sun over your plant."
+        ],
+        "diagram": {
+          "height": 640,
+          "parts": [
+            {
+              "id": "pA",
+              "type": "panel",
+              "x": 180,
+              "y": 50,
+              "label": "Panel A"
+            },
+            {
+              "id": "water",
+              "type": "water",
+              "x": 180,
+              "y": 226,
+              "label": "Cup of water"
+            },
+            {
+              "id": "pump",
+              "type": "pump",
+              "x": 180,
+              "y": 234,
+              "label": "Pump"
+            },
+            {
+              "id": "pB",
+              "type": "panel",
+              "x": 180,
+              "y": 350,
+              "label": "Panel B"
+            },
+            {
+              "id": "motor",
+              "type": "motor",
+              "x": 180,
+              "y": 460,
+              "label": "Motor + fan"
+            },
+            {
+              "id": "res",
+              "type": "resistor",
+              "x": 110,
+              "y": 544,
+              "label": "Resistor",
+              "rotate": -90
+            },
+            {
+              "id": "led",
+              "type": "led",
+              "x": 190,
+              "y": 540,
+              "label": "LED",
+              "labelSide": "right"
+            }
+          ],
+          "wires": [
+            {
+              "id": "a1",
+              "from": "pA.pos",
+              "to": "pump.pos",
+              "side": "+"
+            },
+            {
+              "id": "a2",
+              "from": "pump.neg",
+              "to": "pA.neg",
+              "side": "-"
+            },
+            {
+              "id": "b1",
+              "from": "pB.pos",
+              "to": "motor.pos",
+              "side": "+"
+            },
+            {
+              "id": "b2",
+              "from": "motor.neg",
+              "to": "pB.neg",
+              "side": "-"
+            },
+            {
+              "id": "b3",
+              "from": "motor.pos",
+              "to": "res.a",
+              "side": "+",
+              "via": [
+                [
+                  130,
+                  504
+                ],
+                [
+                  74,
+                  504
+                ]
+              ]
+            },
+            {
+              "id": "b4",
+              "from": "res.b",
+              "to": "led.anode",
+              "side": "+",
+              "via": [
+                [
+                  146,
+                  592
+                ],
+                [
+                  180,
+                  592
+                ]
+              ]
+            },
+            {
+              "id": "b5",
+              "from": "led.cathode",
+              "to": "motor.neg",
+              "side": "-",
+              "via": [
+                [
+                  200,
+                  602
+                ],
+                [
+                  266,
+                  602
+                ],
+                [
+                  266,
+                  460
+                ]
+              ]
+            }
+          ]
+        }
+      }
     }
   ]
 }

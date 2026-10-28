@@ -63,7 +63,9 @@ function resolve(parts: DiagramPart[], ref: string) {
   const t = part && TERMINALS[part.type][term]
   if (!part || !t) throw new Error(`Unknown terminal "${ref}" in circuits.json`)
   const [dx, dy] = rotatePt(t.x, t.y, part.rotate)
-  return { part, term: t, pt: [part.x + dx, part.y + dy] as Pt }
+  // A resistor laid flat has left and right ends, not top and bottom.
+  const name = part.type === 'resistor' && dy === 0 ? (dx < 0 ? 'left end' : 'right end') : t.name
+  return { part, term: { ...t, name }, pt: [part.x + dx, part.y + dy] as Pt }
 }
 
 export function wirePoints(parts: DiagramPart[], w: DiagramWire): Pt[] {
