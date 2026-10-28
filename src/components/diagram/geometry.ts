@@ -20,9 +20,10 @@ export const TERMINALS: Record<PartType, Record<string, { x: number; y: number; 
     neg: { x: 50, y: 0, name: '− tab' },
   },
   pump: {
-    pos: { x: -50, y: 0, name: 'red (+) wire' },
-    neg: { x: 50, y: 0, name: 'black (−) wire' },
+    pos: { x: -14, y: -66, name: 'red (+) wire' },
+    neg: { x: 14, y: -66, name: 'black (−) wire' },
   },
+  water: {},
   clip: {},
 }
 
@@ -32,18 +33,37 @@ export const BOUNDS: Record<PartType, [number, number, number, number]> = {
   led: [-28, -22, 56, 64],
   resistor: [-16, -40, 32, 80],
   motor: [-58, -48, 116, 74],
-  pump: [-58, -48, 116, 76],
+  pump: [-36, -84, 108, 112],
+  water: [-54, -44, 108, 110],
   clip: [-80, -26, 160, 52],
 }
 
 type Pt = [number, number]
+
+/** Rotate a point around (0,0) by a multiple of 90 degrees, like SVG rotate(). */
+export function rotatePt(x: number, y: number, deg = 0): Pt {
+  const r = (deg * Math.PI) / 180
+  const c = Math.round(Math.cos(r))
+  const s = Math.round(Math.sin(r))
+  return [x * c - y * s, x * s + y * c]
+}
+
+/** A part's highlight box after rotation: [x, y, w, h] around the part origin. */
+export function partBounds(part: DiagramPart): [number, number, number, number] {
+  const [bx, by, bw, bh] = BOUNDS[part.type]
+  const corners = [rotatePt(bx, by, part.rotate), rotatePt(bx + bw, by + bh, part.rotate)]
+  const xs = corners.map((c) => c[0])
+  const ys = corners.map((c) => c[1])
+  return [Math.min(...xs), Math.min(...ys), Math.abs(xs[0] - xs[1]), Math.abs(ys[0] - ys[1])]
+}
 
 function resolve(parts: DiagramPart[], ref: string) {
   const [partId, term] = ref.split('.')
   const part = parts.find((p) => p.id === partId)
   const t = part && TERMINALS[part.type][term]
   if (!part || !t) throw new Error(`Unknown terminal "${ref}" in circuits.json`)
-  return { part, term: t, pt: [part.x + t.x, part.y + t.y] as Pt }
+  const [dx, dy] = rotatePt(t.x, t.y, part.rotate)
+  return { part, term: t, pt: [part.x + dx, part.y + dy] as Pt }
 }
 
 export function wirePoints(parts: DiagramPart[], w: DiagramWire): Pt[] {

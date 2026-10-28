@@ -1,13 +1,24 @@
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { HeightUnit } from './db'
+
+export type Theme = 'system' | 'light' | 'dark'
 
 export interface Settings {
   plantName: string
   heightUnit: HeightUnit
+  theme: Theme
 }
 
+// index.html reads this key too, to set the theme before the first paint.
 const KEY = 'bright-ideas:settings'
-const DEFAULTS: Settings = { plantName: 'My plant', heightUnit: 'cm' }
+const DEFAULTS: Settings = { plantName: 'My plant', heightUnit: 'cm', theme: 'system' }
+
+/** "system" removes the attribute so the CSS follows prefers-color-scheme. */
+function applyTheme(theme: Theme) {
+  const root = document.documentElement
+  if (theme === 'system') delete root.dataset.theme
+  else root.dataset.theme = theme
+}
 
 function load(): Settings {
   try {
@@ -28,6 +39,8 @@ const SettingsContext = createContext<SettingsContextValue | null>(null)
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState(load)
+
+  useEffect(() => applyTheme(settings.theme), [settings.theme])
 
   const update = useCallback((patch: Partial<Settings>) => {
     setSettings((prev) => {

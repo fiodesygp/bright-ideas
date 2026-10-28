@@ -22,8 +22,8 @@ export function PartDrawing({ type }: { type: PartType }) {
           <line x1={-90} x2={90} y1={0} y2={0} stroke="#5b8bb5" strokeWidth={1.5} />
           <line x1={-50} x2={-50} y1={30} y2={46} stroke={RED} strokeWidth={4} />
           <line x1={50} x2={50} y1={30} y2={46} stroke={BLACK} strokeWidth={4} />
-          <Sign x={-64} y={46}>+</Sign>
-          <Sign x={64} y={46}>−</Sign>
+          <Sign x={-38} y={47}>+</Sign>
+          <Sign x={38} y={47}>−</Sign>
         </g>
       )
     case 'led':
@@ -65,15 +65,23 @@ export function PartDrawing({ type }: { type: PartType }) {
         </g>
       )
     case 'pump':
+      // Wires leave the top so the clips stay above the water.
       return (
         <g>
-          <line x1={-50} x2={-26} y1={0} y2={0} stroke={RED} strokeWidth={4} />
-          <line x1={26} x2={50} y1={0} y2={0} stroke={BLACK} strokeWidth={4} />
-          <path d="M0 -22 V-40 H24" fill="none" stroke="#006064" strokeWidth={6} strokeLinecap="round" />
+          <line x1={-14} x2={-14} y1={-22} y2={-66} stroke={RED} strokeWidth={4} />
+          <line x1={14} x2={14} y1={-22} y2={-66} stroke={BLACK} strokeWidth={4} />
+          <path d="M26 -6 H40 V-76 H64" fill="none" stroke="#006064" strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" />
           <rect x={-26} y={-22} width={52} height={44} rx={10} fill="#b2ebf2" stroke="#006064" strokeWidth={2} />
           <path d="M0 -12 C6 -4 9 1 9 5 A9 9 0 0 1 -9 5 C-9 1 -6 -4 0 -12 Z" fill="#0277bd" />
-          <Sign x={-40} y={-8}>+</Sign>
-          <Sign x={40} y={-8}>−</Sign>
+          <Sign x={-27} y={-46}>+</Sign>
+          <Sign x={27} y={-46}>−</Sign>
+        </g>
+      )
+    case 'water':
+      return (
+        <g>
+          <path d="M-48 -26 Q-36 -31 -24 -26 T0 -26 T24 -26 T48 -26 L43 34 Q43 40 37 40 L-37 40 Q-43 40 -43 34 Z" fill="#b3e5fc" />
+          <path d="M-50 -40 L-44 34 Q-43 41 -36 41 L36 41 Q43 41 44 34 L50 -40" fill="none" stroke="#455a64" strokeWidth={2.5} strokeLinejoin="round" />
         </g>
       )
     case 'clip':

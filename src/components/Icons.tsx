@@ -56,3 +56,15 @@ export const CameraIcon = (p: P) => (
 export const DownloadIcon = (p: P) => (
   <svg {...base} {...p}><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" /></svg>
 )
+export const EditIcon = (p: P) => (
+  <svg {...base} {...p}><path d="M4 20h4L19 9l-4-4L4 16Z" /><path d="m13 7 4 4" /></svg>
+)
+export const ChartIcon = (p: P) => (
+  <svg {...base} {...p}><path d="M4 20V4" /><path d="M4 20h16" /><path d="m7 15 4-4 3 3 5-6" /></svg>
+)
+export const CloseIcon = (p: P) => (
+  <svg {...base} {...p}><path d="M6 6l12 12" /><path d="M18 6 6 18" /></svg>
+)
+export const WarningIcon = (p: P) => (
+  <svg {...base} {...p}><path d="M12 3 2 20h20Z" /><path d="M12 10v4" /><path d="M12 17h.01" /></svg>
+)

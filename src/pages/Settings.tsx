@@ -1,13 +1,18 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import PageHeading from '../components/PageHeading'
+import { PageHeader } from '../components/PageHeading'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ExportButtons from '../components/ExportButtons'
 import { CheckIcon } from '../components/Icons'
 import { clearAllData, db } from '../data/db'
-import { useSettings } from '../data/settings'
-import '../components/log/LogForm.css'
+import { useSettings, type Theme } from '../data/settings'
 import './Settings.css'
+
+const THEMES: [Theme, string][] = [
+  ['light', 'Light'],
+  ['dark', 'Dark'],
+  ['system', 'System'],
+]
 
 export default function Settings() {
   const { settings, update, reset } = useSettings()
@@ -24,7 +29,7 @@ export default function Settings() {
 
   return (
     <div className="page settings-page">
-      <PageHeading>Settings</PageHeading>
+      <PageHeader title="Settings" />
 
       <section className="card stack" aria-labelledby="plant-title">
         <h2 id="plant-title">Your plant</h2>
@@ -42,9 +47,9 @@ export default function Settings() {
             onKeyDown={(e) => e.key === 'Enter' && saveName()}
           />
         </div>
-        <fieldset className="choice-group">
-          <legend className="field-label">Show plant height in</legend>
-          <div className="unit-toggle">
+        <fieldset className="plain-fieldset">
+          <legend className="field-label">Measure plant height in</legend>
+          <div className="segmented">
             {(['cm', 'in'] as const).map((u) => (
               <label key={u}>
                 <input type="radio" name="unit" value={u} checked={settings.heightUnit === u} onChange={() => update({ heightUnit: u })} />
@@ -55,9 +60,25 @@ export default function Settings() {
         </fieldset>
       </section>
 
+      <section className="card stack section" aria-labelledby="look-title">
+        <h2 id="look-title">Look</h2>
+        <fieldset className="plain-fieldset" aria-describedby="theme-help">
+          <legend className="field-label">Theme</legend>
+          <p className="field-help" id="theme-help">System matches your device's light or dark setting.</p>
+          <div className="segmented">
+            {THEMES.map(([value, label]) => (
+              <label key={value}>
+                <input type="radio" name="theme" value={value} checked={settings.theme === value} onChange={() => update({ theme: value })} />
+                <span>{label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      </section>
+
       <section className="card stack section" aria-labelledby="export-title">
         <h2 id="export-title">Save or share your log</h2>
-        <p>Make a PDF or picture of your whole log. You can print it or send it to your facilitator.</p>
+        <p>Make a PDF or picture of your dashboard. You can print it or send it to your family or facilitator.</p>
         {count ? <ExportButtons /> : <p className="field-help">Add a log entry first. Then you can save it here.</p>}
       </section>
 

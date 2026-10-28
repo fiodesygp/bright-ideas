@@ -58,8 +58,9 @@
   place-items: center;
   height: 150px;
   margin-bottom: 10px;
-  background: var(--surface-2);
-  border-radius: 10px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
 }
 .part-photo img,
 .part-thumb { max-height: 130px; width: auto; max-width: 90%; }

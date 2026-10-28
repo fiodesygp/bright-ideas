@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
-import PageHeading from '../components/PageHeading'
+import { PageHeader } from '../components/PageHeading'
 import CircuitDiagram from '../components/diagram/CircuitDiagram'
-import { AlertIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon } from '../components/Icons'
+import { AlertIcon, ArrowLeftIcon, ArrowRightIcon, CheckIcon, WarningIcon } from '../components/Icons'
 import { circuitsContent } from '../content'
 import NotFound from './NotFound'
 import './CircuitBuilder.css'
@@ -58,10 +58,10 @@ function CircuitBuilder({ circuitId }: { circuitId?: string }) {
 
   return (
     <div className="page circuit-page">
+      <PageHeader title={`Circuit ${circuit.number}: ${circuit.title}`} />
       <Link to="/connect" className="back-link">
         <ArrowLeftIcon width={20} height={20} /> All circuits
       </Link>
-      <PageHeading>Circuit {circuit.number}: {circuit.title}</PageHeading>
 
       <details className="needs">
         <summary>What you need ({circuit.parts.length} items)</summary>
@@ -81,6 +81,8 @@ function CircuitBuilder({ circuitId }: { circuitId?: string }) {
           parts={diagram.parts}
           wires={diagram.wires}
           height={diagram.height}
+          viewX={diagram.viewX}
+          viewWidth={diagram.viewWidth}
           doneWireIds={doneWireIds}
           currentWireId={isCheck ? undefined : current.wire}
           highlightPartIds={isCheck ? [] : current.highlightParts}
@@ -96,7 +98,14 @@ function CircuitBuilder({ circuitId }: { circuitId?: string }) {
 
       {!isCheck ? (
         <>
-          <p className="instruction">{current.text}</p>
+          {current.kind === 'safety' ? (
+            <div className="instruction instruction-safety">
+              <WarningIcon />
+              <p><strong>Safety first:</strong> {current.text}</p>
+            </div>
+          ) : (
+            <p className="instruction">{current.text}</p>
+          )}
           <div className="step-nav">
             <button type="button" className="btn btn-secondary" onClick={() => go(step - 1)} disabled={step === 0}>
               <ArrowLeftIcon width={20} height={20} /> Back

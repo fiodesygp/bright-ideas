@@ -28,7 +28,7 @@ a.circuit-item:hover { border-color: var(--primary); background: var(--primary-s
   height: 40px;
   border-radius: 50%;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
   font-weight: 800;
   font-size: 1.15rem;
 }

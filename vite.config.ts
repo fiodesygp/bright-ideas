@@ -9,7 +9,7 @@ const base = '/bright-ideas/'
 export default defineConfig({
   base,
   // Export libraries load lazily; pre-bundle them so dev doesn't reload mid-export.
-  optimizeDeps: { include: ['html-to-image', 'jspdf'] },
+  optimizeDeps: { include: ['html-to-image', 'pdfkit', 'pdfkit/output'] },
   plugins: [
     react(),
     VitePWA({
@@ -22,8 +22,8 @@ export default defineConfig({
         short_name: 'Bright Ideas',
         description: 'A companion tool for the miniAgriPV kit: log your plant, learn the parts, and build circuits.',
         lang: 'en',
-        theme_color: '#1f6b3a',
-        background_color: '#fffdf7',
+        theme_color: '#2e7d3e',
+        background_color: '#ffffff',
         display: 'standalone',
         scope: base,
         start_url: base,
@@ -34,7 +34,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,woff2}'],
+        // woff files are the PDF fonts; woff2 are the page fonts.
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,woff,woff2}'],
         navigateFallback: `${base}index.html`,
       },
     }),

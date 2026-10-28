@@ -1,5 +1,6 @@
 .export-status { margin: 8px 0 0; min-height: 1.5em; color: var(--ink-2); }
 
+/* The export sheet always uses fixed light colors, whatever the app theme. */
 .export-offscreen {
   position: fixed;
   left: -10000px;
@@ -7,18 +8,30 @@
   pointer-events: none;
 }
 .export-sheet {
-  background: #fff;
-  color: #1b2420;
+  background: #ffffff;
+  color: #111111;
   padding: 32px;
   font-size: 15px;
 }
-.export-sheet h1 { font-size: 26px; margin-bottom: 4px; }
-.export-sheet h2 { font-size: 18px; margin: 20px 0 8px; }
+.export-sheet h1 { font-size: 28px; margin-bottom: 4px; color: #2e7d3e; }
+.export-sheet h2 { font-size: 18px; margin: 22px 0 8px; }
 .export-sheet h3 { font-size: 16px; margin: 0 0 4px; }
-.export-meta { color: #48534d; }
+.export-meta { color: #4a524d; }
+.export-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin: 16px 0 0;
+}
+.export-stats div { border: 1px solid #e2e8e1; border-top: 4px solid #b2d35b; border-radius: 10px; padding: 8px 10px; }
+.export-stats dt { font-size: 12px; color: #4a524d; }
+.export-stats dd { margin: 2px 0 0; font-size: 20px; font-weight: 700; }
+.export-stats dd.export-note { font-size: 12px; font-weight: 400; color: #4a524d; }
 .export-entry {
-  border-top: 1px solid #d6ddd2;
+  display: flex;
+  gap: 14px;
+  border-top: 1px solid #e2e8e1;
   padding: 12px 0;
 }
 .export-entry p { margin: 4px 0; }
-.export-entry img { display: block; max-height: 180px; max-width: 260px; border-radius: 6px; margin: 6px 0; }
+.export-entry img { width: 140px; height: 105px; object-fit: cover; border-radius: 8px; flex: none; }

@@ -2,15 +2,16 @@
   display: block;
   width: 100%;
   height: auto;
-  background: var(--surface);
+  background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius);
 }
-.part-label { font-size: 14px; font-weight: 700; fill: var(--ink); }
-.part-label-inverse { fill: #fff; }
+/* Diagrams sit on light paper in both themes, so their colors are fixed. */
+.part-label { font-size: 14px; font-weight: 700; fill: var(--paper-ink); }
+.part-label-inverse { fill: #ffffff; }
 .part-highlight {
-  fill: var(--sun-soft);
-  stroke: var(--focus);
+  fill: #fff6d6;
+  stroke: #1a4fb8;
   stroke-width: 3;
   stroke-dasharray: 8 5;
 }
@@ -31,8 +32,8 @@
   stroke-linecap: round;
   opacity: 0.85;
 }
-.wire-pill { fill: #fff; stroke-width: 2.5; }
+.wire-pill { fill: #ffffff; stroke-width: 2.5; }
 .wire-pos .wire-pill { stroke: var(--wire-red); }
 .wire-neg .wire-pill { stroke: var(--wire-black); }
 .wire-new .wire-pill { stroke-width: 3; }
-.wire-pill-text { font-size: 15px; font-weight: 800; fill: var(--ink); }
+.wire-pill-text { font-size: 15px; font-weight: 800; fill: var(--paper-ink); }

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { fromCm, type HeightUnit, type LogEntry } from '../../data/db'
 import { formatDate, parseISODate } from '../../lib/dates'
+import { chartSummary } from '../../lib/stats'
 import './HeightChart.css'
 
 interface Props {
@@ -14,9 +15,10 @@ interface Props {
 const H = 220
 const PAD = { top: 28, right: 18, bottom: 34, left: 44 }
 
-// Styles are set as SVG attributes (not CSS classes) so they survive image export.
-const C = { grid: '#e3e8e0', axis: '#6b7a72', ink: '#48534d', line: '#1f6b3a', surface: '#ffffff' }
-const tickProps = { fill: C.ink, fontSize: 12 }
+// Colors are set inline (not via CSS classes) so they survive image export.
+// On screen they follow the theme tokens; in exports they use fixed print colors.
+const THEMED = { grid: 'var(--chart-grid)', axis: 'var(--line-strong)', ink: 'var(--ink-2)', line: 'var(--chart-line)', fill: 'var(--chart-fill)', surface: 'var(--surface)' }
+const PRINT = { grid: '#e2e8e1', axis: '#6f7a74', ink: '#4a524d', line: '#2e7d3e', fill: '#b2d35b', surface: '#ffffff' }
 
 function niceMax(v: number) {
   if (v <= 0) return 5
@@ -29,6 +31,8 @@ const fmt = (v: number) => (Math.round(v * 10) / 10).toString()
 
 /** Single-series line chart of plant height over time. */
 export default function HeightChart({ entries, unit, width, interactive = true }: Props) {
+  const C = interactive ? THEMED : PRINT
+  const tickProps = { style: { fill: C.ink }, fontSize: 12 }
   const wrapRef = useRef<HTMLDivElement>(null)
   const [measured, setMeasured] = useState(340)
   const W = width ?? measured
@@ -61,12 +65,7 @@ export default function HeightChart({ entries, unit, width, interactive = true }
 
   const sel = selected ?? points.length - 1
   const active = points[Math.min(sel, points.length - 1)]
-  const first = points[0]
-  const last = points[points.length - 1]
-  const summary =
-    points.length === 1
-      ? `One entry: ${fmt(first.v)} ${unit} on ${formatDate(first.date)}.`
-      : `Height went from ${fmt(first.v)} ${unit} on ${formatDate(first.date)} to ${fmt(last.v)} ${unit} on ${formatDate(last.date)}, over ${points.length} entries.`
+  const summary = chartSummary(entries, unit)
 
   function nearest(clientX: number) {
     const rect = wrapRef.current!.querySelector('svg')!.getBoundingClientRect()
@@ -93,7 +92,7 @@ export default function HeightChart({ entries, unit, width, interactive = true }
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true" className="height-chart-svg">
       {yTicks.map((v) => (
         <g key={v}>
-          <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} stroke={v === 0 ? C.axis : C.grid} strokeWidth={1} />
+          <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} style={{ stroke: v === 0 ? C.axis : C.grid }} strokeWidth={1} />
           <text x={PAD.left - 8} y={y(v)} dy="0.32em" textAnchor="end" {...tickProps}>{fmt(v)}</text>
         </g>
       ))}
@@ -110,13 +109,20 @@ export default function HeightChart({ entries, unit, width, interactive = true }
         </text>
       ))}
       {interactive && (
-        <line x1={x(active.t)} x2={x(active.t)} y1={PAD.top} y2={PAD.top + innerH} stroke={C.axis} strokeWidth={1} strokeDasharray="3 3" />
+        <line x1={x(active.t)} x2={x(active.t)} y1={PAD.top} y2={PAD.top + innerH} style={{ stroke: C.axis }} strokeWidth={1} strokeDasharray="3 3" />
       )}
       {points.length > 1 && (
-        <polyline points={points.map((p) => `${x(p.t)},${y(p.v)}`).join(' ')} fill="none" stroke={C.line} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        <>
+          <polygon
+            points={[`${x(t0)},${y(0)}`, ...points.map((p) => `${x(p.t)},${y(p.v)}`), `${x(t1)},${y(0)}`].join(' ')}
+            style={{ fill: C.fill }}
+            fillOpacity={0.3}
+          />
+          <polyline points={points.map((p) => `${x(p.t)},${y(p.v)}`).join(' ')} style={{ stroke: C.line, fill: 'none' }} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+        </>
       )}
       {points.map((p, i) => (
-        <circle key={i} cx={x(p.t)} cy={y(p.v)} r={interactive && p === active ? 6.5 : 4.5} fill={C.line} stroke={C.surface} strokeWidth={2} />
+        <circle key={i} cx={x(p.t)} cy={y(p.v)} r={interactive && p === active ? 6.5 : 4.5} style={{ fill: C.line, stroke: C.surface }} strokeWidth={2} />
       ))}
     </svg>
   )

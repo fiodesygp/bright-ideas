@@ -1,10 +1,11 @@
-import { useId, useRef, useState, type FormEvent } from 'react'
-import ChoiceGroup from '../ChoiceGroup'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+import { Link } from 'react-router'
 import { AlertIcon, CameraIcon, CheckIcon, TrashIcon } from '../Icons'
-import { logContent, type ReflectionPrompt } from '../../content'
-import { CURRENT_PLANT_ID, db, toCm, type HeightUnit, type Soil } from '../../data/db'
+import { logContent } from '../../content'
+import { CURRENT_PLANT_ID, db, fromCm, toCm, type LogEntry } from '../../data/db'
 import { useSettings } from '../../data/settings'
 import { todayISO } from '../../lib/dates'
+import { fmtNum } from '../../lib/labels'
 import { resizePhoto } from '../../lib/photo'
 import { useObjectUrl } from '../../lib/useObjectUrl'
 import './LogForm.css'
@@ -15,53 +16,28 @@ const MAX_HEIGHT_CM = 300
 interface FormState {
   date: string
   height: string
-  heightUnit: HeightUnit
-  leafCount: string
-  leafColor: string
-  soil: string
-  watered: string
-  weather: string
-  shade: string
-  photo: Blob | null
   note: string
-  reflection: string
+  photo: Blob | null
 }
 
-type Errors = Partial<Record<'date' | 'height' | 'leafCount' | 'photo', string>>
+type Errors = Partial<Record<'date' | 'height' | 'photo', string>>
 
 const { fields } = logContent
-const YES_NO = [
-  { id: 'yes', label: 'Yes' },
-  { id: 'no', label: 'No' },
-]
 
-function emptyForm(unit: HeightUnit, date = todayISO()): FormState {
-  return {
-    date, height: '', heightUnit: unit, leafCount: '', leafColor: '', soil: '', watered: '',
-    weather: '', shade: '', photo: null, note: '', reflection: '',
-  }
+interface Props {
+  /** When set, the form edits this entry instead of adding a new one. */
+  entry?: LogEntry
+  onDone?: () => void
 }
 
-function validate(f: FormState): Errors {
-  const errors: Errors = {}
-  if (!f.date) errors.date = 'Pick the date you checked your plant.'
-  else if (f.date > todayISO()) errors.date = 'The date cannot be in the future.'
-
-  const h = Number(f.height)
-  if (f.height.trim() === '') errors.height = 'Enter how tall your plant is.'
-  else if (!Number.isFinite(h) || h < 0) errors.height = 'Height must be a number 0 or bigger.'
-  else if (toCm(h, f.heightUnit) > MAX_HEIGHT_CM) errors.height = `That is very tall. Check the number and the unit (${f.heightUnit}).`
-
-  if (f.leafCount !== '') {
-    const n = Number(f.leafCount)
-    if (!Number.isInteger(n) || n < 0 || n > 500) errors.leafCount = 'Leaves must be a whole number, like 0, 4, or 12.'
-  }
-  return errors
-}
-
-export default function LogForm({ prompt }: { prompt: ReflectionPrompt }) {
+export default function LogForm({ entry, onDone }: Props) {
   const { settings } = useSettings()
-  const [form, setForm] = useState(() => emptyForm(settings.heightUnit))
+  const unit = settings.heightUnit
+  const [form, setForm] = useState<FormState>(() =>
+    entry
+      ? { date: entry.date, height: fmtNum(fromCm(entry.heightCm, unit)), note: entry.note, photo: entry.photo ?? null }
+      : { date: todayISO(), height: '', note: '', photo: null },
+  )
   const [errors, setErrors] = useState<Errors>({})
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [photoBusy, setPhotoBusy] = useState(false)
@@ -70,15 +46,28 @@ export default function LogForm({ prompt }: { prompt: ReflectionPrompt }) {
   const photoInputRef = useRef<HTMLInputElement>(null)
   const photoUrl = useObjectUrl(form.photo)
   const id = useId()
+  const editing = !!entry
+  const editTitleRef = useRef<HTMLHeadingElement>(null)
+
+  // When the edit form opens, move focus to its heading.
+  useEffect(() => {
+    if (editing) editTitleRef.current?.focus()
+  }, [editing])
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((f) => ({ ...f, [key]: value }))
     if (status === 'saved') setStatus('idle')
   }
 
-  const stepLeaves = (delta: number) => {
-    const n = Math.max(0, (Number(form.leafCount) || 0) + delta)
-    set('leafCount', String(n))
+  function validate(f: FormState): Errors {
+    const found: Errors = {}
+    if (!f.date) found.date = 'Pick the date you measured your plant.'
+    else if (f.date > todayISO()) found.date = 'The date cannot be in the future.'
+    const h = Number(f.height)
+    if (f.height.trim() === '') found.height = 'Enter how tall your plant is.'
+    else if (!Number.isFinite(h) || h < 0) found.height = 'Height must be a number 0 or bigger.'
+    else if (toCm(h, unit) > MAX_HEIGHT_CM) found.height = `That is very tall. Check the number. It should be in ${unit}.`
+    return found
   }
 
   async function onPhoto(file: File | undefined) {
@@ -106,26 +95,21 @@ export default function LogForm({ prompt }: { prompt: ReflectionPrompt }) {
     }
     setStatus('saving')
     const height = Number(form.height)
-    await db.entries.add({
-      plantId: CURRENT_PLANT_ID,
+    const data = {
       date: form.date,
-      createdAt: Date.now(),
       height,
-      heightUnit: form.heightUnit,
-      heightCm: toCm(height, form.heightUnit),
-      leafCount: form.leafCount === '' ? null : Number(form.leafCount),
-      leafColor: form.leafColor,
-      soil: form.soil as Soil | '',
-      watered: form.watered === '' ? null : form.watered === 'yes',
-      weather: form.weather,
-      shade: form.shade,
-      photo: form.photo ?? undefined,
+      heightUnit: unit,
+      heightCm: toCm(height, unit),
       note: form.note.trim(),
-      promptId: prompt.id,
-      promptText: prompt.text,
-      reflection: form.reflection.trim(),
-    })
-    setForm(emptyForm(form.heightUnit, form.date))
+      photo: form.photo ?? undefined,
+    }
+    if (entry) {
+      await db.entries.update(entry.id, { ...data, updatedAt: Date.now() })
+      onDone?.()
+      return
+    }
+    await db.entries.add({ ...data, plantId: CURRENT_PLANT_ID, createdAt: Date.now() })
+    setForm({ date: form.date, height: '', note: '', photo: null })
     setStatus('saved')
     requestAnimationFrame(() => savedRef.current?.focus())
   }
@@ -140,11 +124,18 @@ export default function LogForm({ prompt }: { prompt: ReflectionPrompt }) {
         <AlertIcon /> {errors[name]}
       </p>
     )
+  const titleId = fieldId('title')
 
   return (
-    <form className="log-form card" onSubmit={onSubmit} noValidate aria-labelledby="new-entry-title">
-      <h2 id="new-entry-title">New entry</h2>
-      <p className="page-intro">{logContent.intro}</p>
+    <form className={`log-form${editing ? ' is-editing' : ' card'}`} onSubmit={onSubmit} noValidate aria-labelledby={titleId}>
+      {editing ? (
+        <h3 id={titleId} ref={editTitleRef} tabIndex={-1}>Edit entry</h3>
+      ) : (
+        <>
+          <h2 id={titleId}>New entry</h2>
+          <p className="page-intro">{logContent.intro}</p>
+        </>
+      )}
       <p className="required-note">Fields marked <span aria-hidden="true">*</span><span className="visually-hidden">with a star</span> are required.</p>
 
       {errorList.length > 0 && (
@@ -182,7 +173,9 @@ export default function LogForm({ prompt }: { prompt: ReflectionPrompt }) {
         </div>
 
         <div className="field">
-          <label className="field-label" htmlFor={fieldId('height')}>{fields.height} <Req /></label>
+          <label className="field-label" htmlFor={fieldId('height')}>
+            {fields.height} <span className="unit-hint">({unit === 'cm' ? 'centimeters' : 'inches'})</span> <Req />
+          </label>
           <p className="field-help" id={fieldId('height-help')}>{fields.heightHelp}</p>
           <div className="height-row">
             <input
@@ -198,49 +191,31 @@ export default function LogForm({ prompt }: { prompt: ReflectionPrompt }) {
               aria-invalid={!!errors.height}
               aria-describedby={describedBy('height', fieldId('height-help'))}
             />
-            <fieldset className="unit-toggle">
-              <legend className="visually-hidden">Height unit</legend>
-              {(['cm', 'in'] as const).map((u) => (
-                <label key={u}>
-                  <input type="radio" name={fieldId('unit')} value={u} checked={form.heightUnit === u} onChange={() => set('heightUnit', u)} />
-                  <span>{u === 'cm' ? 'cm' : 'in'}<span className="visually-hidden">{u === 'cm' ? ' centimeters' : ' inches'}</span></span>
-                </label>
-              ))}
-            </fieldset>
+            <span className="unit-suffix" aria-hidden="true">{unit}</span>
           </div>
           {fieldError('height')}
+          {!editing && <p className="field-help unit-link"><Link to="/settings">Change cm or inches in Settings</Link></p>}
         </div>
       </div>
 
       <div className="field">
-        <label className="field-label" htmlFor={fieldId('leafCount')}>{fields.leafCount}</label>
-        <div className="stepper">
-          <button type="button" className="btn btn-secondary" onClick={() => stepLeaves(-1)} aria-label="One fewer leaf">−</button>
-          <input
-            id={fieldId('leafCount')}
-            className="input input-number"
-            type="number"
-            inputMode="numeric"
-            min={0}
-            step={1}
-            value={form.leafCount}
-            onChange={(e) => set('leafCount', e.target.value)}
-            aria-invalid={!!errors.leafCount}
-            aria-describedby={describedBy('leafCount')}
-          />
-          <button type="button" className="btn btn-secondary" onClick={() => stepLeaves(1)} aria-label="One more leaf">+</button>
-        </div>
-        {fieldError('leafCount')}
+        <label className="field-label" htmlFor={fieldId('note')}>{fields.note}</label>
+        <p className="field-help" id={fieldId('note-help')}>{fields.noteHelp}</p>
+        <textarea
+          id={fieldId('note')}
+          className="input"
+          rows={3}
+          maxLength={NOTE_MAX}
+          value={form.note}
+          onChange={(e) => set('note', e.target.value)}
+          aria-describedby={`${fieldId('note-help')} ${fieldId('note-count')}`}
+        />
+        <p className="field-help counter" id={fieldId('note-count')}>{form.note.length} of {NOTE_MAX} letters</p>
       </div>
 
-      <ChoiceGroup name={fieldId('leafColor')} legend={fields.leafColor} options={logContent.leafColors} value={form.leafColor} onChange={(v) => set('leafColor', v)} />
-      <ChoiceGroup name={fieldId('soil')} legend={fields.soil} help={fields.soilHelp} options={logContent.soil} value={form.soil} onChange={(v) => set('soil', v)} showOptionHelp />
-      <ChoiceGroup name={fieldId('watered')} legend={fields.watered} options={YES_NO} value={form.watered} onChange={(v) => set('watered', v)} />
-      <ChoiceGroup name={fieldId('weather')} legend={fields.weather} options={logContent.weather} value={form.weather} onChange={(v) => set('weather', v)} />
-      <ChoiceGroup name={fieldId('shade')} legend={fields.shade} options={logContent.shade} value={form.shade} onChange={(v) => set('shade', v)} />
-
       <div className="field">
-        <span className="field-label" id={fieldId('photo-label')}>{fields.photo}</span>
+        <span className="field-label">{fields.photo}</span>
+        <p className="field-help" id={fieldId('photo-help')}>{fields.photoHelp}</p>
         {photoUrl ? (
           <div className="photo-preview">
             <img src={photoUrl} alt="The photo you added to this entry" />
@@ -251,15 +226,14 @@ export default function LogForm({ prompt }: { prompt: ReflectionPrompt }) {
         ) : (
           <label className="btn btn-secondary photo-button">
             <CameraIcon width={22} height={22} />
-            {photoBusy ? 'Loading photo…' : 'Add a photo'}
+            {photoBusy ? 'Loading photo…' : 'Take or choose a photo'}
             <input
               ref={photoInputRef}
               id={fieldId('photo')}
               className="visually-hidden"
               type="file"
               accept="image/*"
-              capture="environment"
-              aria-describedby={describedBy('photo')}
+              aria-describedby={describedBy('photo', fieldId('photo-help'))}
               onChange={(e) => onPhoto(e.target.files?.[0])}
             />
           </label>
@@ -267,45 +241,19 @@ export default function LogForm({ prompt }: { prompt: ReflectionPrompt }) {
         {fieldError('photo')}
       </div>
 
-      <div className="field">
-        <label className="field-label" htmlFor={fieldId('note')}>{fields.note}</label>
-        <textarea
-          id={fieldId('note')}
-          className="input"
-          rows={2}
-          maxLength={NOTE_MAX}
-          value={form.note}
-          onChange={(e) => set('note', e.target.value)}
-          aria-describedby={fieldId('note-count')}
-        />
-        <p className="field-help counter" id={fieldId('note-count')}>{form.note.length} of {NOTE_MAX} letters</p>
-      </div>
-
-      <div className="field reflection">
-        <label className="field-label" htmlFor={fieldId('reflection')}>
-          {fields.reflection}
-          <span className="reflection-prompt">{prompt.text}</span>
-        </label>
-        <textarea
-          id={fieldId('reflection')}
-          className="input"
-          rows={3}
-          maxLength={500}
-          value={form.reflection}
-          onChange={(e) => set('reflection', e.target.value)}
-        />
-      </div>
-
       {status === 'saved' && (
         <div className="callout callout-success" role="status" tabIndex={-1} ref={savedRef}>
           <CheckIcon />
-          <p><strong>Saved!</strong> Your entry is in the history below.</p>
+          <p><strong>Saved!</strong> See it in your recent entries below.</p>
         </div>
       )}
 
-      <button type="submit" className="btn btn-block" disabled={status === 'saving' || photoBusy}>
-        {status === 'saving' ? 'Saving…' : 'Save entry'}
-      </button>
+      <div className="btn-row">
+        <button type="submit" className={`btn${editing ? '' : ' btn-block'}`} disabled={status === 'saving' || photoBusy}>
+          {status === 'saving' ? 'Saving…' : editing ? 'Save changes' : 'Save entry'}
+        </button>
+        {editing && <button type="button" className="btn btn-secondary" onClick={onDone}>Cancel</button>}
+      </div>
     </form>
   )
 }

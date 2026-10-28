@@ -1,30 +1,44 @@
-.home-hero {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
+/* Hero: text sits in the clear band between the two waves, never on them. */
+.hero {
+  position: relative;
+  margin: -20px -16px 20px;
+  padding: 116px 20px 108px;
+  text-align: center;
 }
-.home-hero img { border-radius: 14px; flex: none; }
-.home-hero h1 { margin: 0; }
-.home-tagline { margin: 0; color: var(--ink-2); }
+.hero-text { position: relative; z-index: 1; }
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.75rem, 13vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--wordmark);
+}
+.hero-tagline {
+  margin: 8px 0 0;
+  font-size: clamp(1.15rem, 5vw, 1.5rem);
+  color: var(--ink);
+}
+.hero-subtitle { margin: 6px 0 0; color: var(--ink-2); }
+@media (min-width: 640px) {
+  .hero { padding: 150px 20px 140px; }
+}
 
 .driving-question {
-  background: var(--sun-soft);
-  border-left: 6px solid #8a6a00;
+  background: var(--lime-soft);
+  border-left: 6px solid var(--lime-border);
   border-radius: var(--radius);
   padding: 16px 18px;
 }
 .driving-question h2 {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #5c4700;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
   margin-bottom: 6px;
 }
 .driving-question p {
-  font-size: 1.2rem;
-  font-weight: 600;
-  line-height: 1.45;
+  font-size: 1.15rem;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -35,29 +49,35 @@
   display: grid;
   gap: 12px;
 }
+@media (min-width: 640px) {
+  .home-links { grid-template-columns: 1fr 1fr; }
+}
 .home-link {
   display: flex;
   align-items: center;
   gap: 14px;
+  height: 100%;
   min-height: 72px;
   padding: 14px 16px;
   background: var(--surface);
-  border: 2px solid var(--line);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
+  box-shadow: var(--shadow);
   color: var(--ink);
   text-decoration: none;
 }
-.home-link:hover { border-color: var(--primary); background: var(--primary-soft); }
+.home-link:hover { border-color: var(--primary); }
 .home-link-icon {
   flex: none;
   display: grid;
   place-items: center;
   width: 48px;
   height: 48px;
-  border-radius: 12px;
-  background: var(--primary-soft);
-  color: var(--primary);
+  border-radius: 14px;
+  background: var(--teal-soft);
+  color: var(--teal-ink);
 }
+.home-links li:nth-child(odd) .home-link-icon { background: var(--primary-soft); color: var(--primary); }
 .home-link-icon svg { width: 28px; height: 28px; }
 .home-link-text { display: grid; gap: 2px; flex: 1; }
 .home-link-text strong { font-size: 1.1rem; color: var(--primary); }

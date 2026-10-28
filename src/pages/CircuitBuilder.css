@@ -39,20 +39,37 @@
   color: var(--ink-2);
 }
 .legend > span { display: inline-flex; align-items: center; gap: 6px; }
-.swatch-line { display: inline-block; width: 22px; height: 4px; border-radius: 2px; }
+.swatch-line {
+  display: inline-block;
+  width: 24px;
+  height: 5px;
+  border-radius: 3px;
+  /* Paper-colored outline keeps the black swatch visible in dark mode. */
+  box-shadow: 0 0 0 2px var(--paper);
+}
 .swatch-line.pos { background: var(--wire-red); }
 .swatch-line.neg { background: var(--wire-black); }
 .swatch-glow { display: inline-block; width: 22px; height: 12px; border-radius: 6px; background: #ffc21a; }
 
 .instruction {
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.15rem;
   line-height: 1.45;
   background: var(--surface);
   border: 2px solid var(--primary);
   border-radius: var(--radius);
   padding: 14px 16px;
 }
+
+.instruction-safety {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--tip-soft);
+  border-color: var(--tip-border);
+  border-width: 3px;
+}
+.instruction-safety svg { flex: none; width: 28px; height: 28px; margin-top: 2px; }
+.instruction-safety p { margin: 0; }
 
 .step-nav {
   display: flex;

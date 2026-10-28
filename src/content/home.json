@@ -1,13 +1,18 @@
 {
   "appName": "Bright Ideas",
-  "tagline": "Your helper for the miniAgriPV kit.",
+  "tagline": "Exploring Solar Energy and Plants",
   "drivingQuestionLabel": "Our driving question",
   "drivingQuestion": "In a desert where land, water, and shade are hard to come by, how can you use STEM to build a micro-lab that shows your family how one sunny space can grow food and power other things at once?",
   "sections": [
     {
       "to": "/log",
       "title": "Planting Log",
-      "text": "Write down how your plant grows under the solar panel."
+      "text": "Measure your plant and save an entry."
+    },
+    {
+      "to": "/log/dashboard",
+      "title": "My Dashboard",
+      "text": "See your growth chart and photo timeline."
     },
     {
       "to": "/learn",
@@ -19,5 +24,6 @@
       "title": "Connect the Components",
       "text": "Build circuits one step at a time."
     }
-  ]
+  ],
+  "subtitle": "Your helper for the miniAgriPV kit."
 }

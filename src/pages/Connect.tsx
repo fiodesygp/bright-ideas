@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import PageHeading from '../components/PageHeading'
+import { PageHeader } from '../components/PageHeading'
 import { ArrowRightIcon } from '../components/Icons'
 import { circuitsContent } from '../content'
 import './Connect.css'
@@ -7,8 +7,9 @@ import './Connect.css'
 export default function Connect() {
   return (
     <div className="page">
-      <PageHeading>Connect the Components</PageHeading>
-      <p className="page-intro">{circuitsContent.intro}</p>
+      <PageHeader title="Connect the Components">
+        <p className="page-intro">{circuitsContent.intro}</p>
+      </PageHeader>
       <div className="callout callout-tip safety">
         <p><strong>Wire colors:</strong> red always means + (positive). Black always means − (negative).</p>
       </div>

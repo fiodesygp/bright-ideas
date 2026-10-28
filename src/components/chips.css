@@ -4,17 +4,11 @@
   padding: 0;
   min-width: 0;
 }
-.choice-group legend,
-.field-label {
+.choice-group legend {
   display: block;
   font-weight: 700;
   padding: 0;
   margin-bottom: 6px;
-}
-.field-help {
-  color: var(--ink-2);
-  font-size: 0.95rem;
-  margin: -2px 0 8px;
 }
 
 .chips {
@@ -32,6 +26,7 @@
   border: 2px solid var(--line-strong);
   border-radius: 12px;
   background: var(--surface);
+  color: var(--ink);
   cursor: pointer;
   user-select: none;
 }
@@ -53,13 +48,6 @@
   border-radius: 50%;
   border: 2px solid var(--line-strong);
   background: var(--surface);
-}
-.chip-swatch {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.35);
 }
 .chip-text { display: grid; line-height: 1.25; }
 .chip-text small { color: var(--ink-2); font-size: 0.85rem; font-weight: 400; }

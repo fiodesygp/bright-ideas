@@ -1,7 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie'
 
 export type HeightUnit = 'cm' | 'in'
-export type Soil = 'dry' | 'damp' | 'wet'
 
 export interface LogEntry {
   id: number
@@ -9,23 +8,14 @@ export interface LogEntry {
   /** Local calendar date, YYYY-MM-DD */
   date: string
   createdAt: number
+  updatedAt?: number
   height: number
   heightUnit: HeightUnit
   /** Height normalized to cm, for the chart and sorting */
   heightCm: number
-  leafCount: number | null
-  /** Option ids from src/content/log.json; '' when left blank */
-  leafColor: string
-  soil: Soil | ''
-  watered: boolean | null
-  weather: string
-  shade: string
-  photo?: Blob
   note: string
-  promptId: string
-  /** Prompt text is saved with the entry so edits to prompts.json don't change history */
-  promptText: string
-  reflection: string
+  /** Compressed JPEG, stored only on this device */
+  photo?: Blob
 }
 
 export const db = new Dexie('bright-ideas') as Dexie & {
@@ -49,10 +39,16 @@ export function fromCm(cm: number, unit: HeightUnit) {
 /** The MVP tracks one plant. Entries keep a plantId so more plants can be added later. */
 export const CURRENT_PLANT_ID = 1
 
-/** Entries newest first (by date, then by time saved). */
-export async function getEntries(plantId: number) {
+/**
+ * Entries newest first (by date, then by time saved).
+ * Entries saved by older versions of the app may carry extra fields
+ * (leaves, soil, weather...). They are left in storage and ignored here.
+ */
+export async function getEntries(plantId: number): Promise<LogEntry[]> {
   const list = await db.entries.where('plantId').equals(plantId).toArray()
-  return list.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt)
+  return list
+    .map((e) => ({ ...e, note: e.note ?? '' }))
+    .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt)
 }
 
 export async function clearAllData() {

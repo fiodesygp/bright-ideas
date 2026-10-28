@@ -1,0 +1,23 @@
+.waves {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.wave { position: absolute; display: block; }
+.wave-lime { top: 0; right: 0; fill: var(--wave-lime); }
+.wave-teal { bottom: 0; left: 0; fill: var(--wave-teal); }
+
+.waves-hero .wave-lime { width: 72%; height: 104px; }
+.waves-hero .wave-teal { width: 78%; height: 92px; }
+
+.waves-header .wave-lime { width: 46%; height: 44px; }
+
+.waves-empty .wave-lime { width: 40%; height: 46px; }
+.waves-empty .wave-teal { width: 44%; height: 46px; }
+
+@media (min-width: 640px) {
+  .waves-hero .wave-lime { width: 58%; height: 140px; }
+  .waves-hero .wave-teal { width: 60%; height: 120px; }
+}

@@ -1,34 +1,131 @@
 :root {
-  color-scheme: light;
-  --bg: #fffdf7;
+  /* ---------- Design tokens (light) ----------
+     Brand colors are for decoration only (waves, icons, borders, chart fills):
+     they are about 2:1 on white. Text, links, and buttons use the deep shades. */
+  --brand-green: #63c174;
+  --brand-lime: #b2d35b;
+  --brand-teal: #5abfb0;
+  --wave-lime: var(--brand-lime);
+  --wave-teal: var(--brand-teal);
+
+  --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f2f6ee;
-  --ink: #1b2420;
-  --ink-2: #48534d;
-  --line: #d6ddd2;
-  --line-strong: #6b7a72;
-  --primary: #1f6b3a;
-  --primary-hover: #17552d;
-  --primary-soft: #e2f0e5;
-  --sun: #f2b705;
-  --sun-soft: #fff4cc;
+  --surface-2: #f5f9f3;
+  --ink: #111111;
+  --ink-2: #4a524d;
+  --line: #e2e8e1;
+  --line-strong: #6f7a74;
+
+  --wordmark: #3a974d;         /* large bold wordmark only (3.7:1, large-text AA) */
+  --primary: #2e7d3e;          /* deep green: text, links, buttons (5.1:1) */
+  --primary-hover: #24652f;
+  --on-primary: #ffffff;       /* text on primary buttons (5.1:1) */
+  --primary-soft: #f0f8f1;
+  --teal-ink: #1f7a6e;         /* deep teal for text (5.2:1) */
+  --teal-soft: #eef8f6;
+  --lime-soft: #f5f9e6;
+  --lime-border: #6d8a1f;
+
   --focus: #1a4fb8;
   --error: #b3261e;
+  --on-error: #ffffff;
+  --error-hover: #8f1e18;
   --error-soft: #fdecea;
+  --tip-soft: #fff6d6;
+  --tip-border: #8a6a00;
+
+  /* Circuit diagrams always sit on light "paper" so red/black wires match the real kit. */
+  --paper: #ffffff;
+  --paper-ink: #111111;
   --wire-red: #c62828;
   --wire-black: #1c1c1c;
 
+  --chart-line: var(--primary);
+  --chart-fill: var(--brand-lime);
+  --chart-grid: #e6ebe4;
+
+  --shadow: 0 1px 2px rgba(17, 17, 17, 0.05), 0 6px 20px rgba(17, 17, 17, 0.06);
   --radius: 14px;
   --tap: 44px;
   --tabbar-h: 64px;
   --max: 720px;
 
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: light;
+  font-family: 'Encode Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   font-size: 100%;
   line-height: 1.5;
   color: var(--ink);
   background: var(--bg);
   -webkit-text-size-adjust: 100%;
+}
+
+/* ---------- Design tokens (dark) ----------
+   Same set twice: once for "System" when the device is dark, once for the manual "Dark" choice. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --wave-lime: #8fae3f;
+    --wave-teal: #3c9a8d;
+    --bg: #141917;
+    --surface: #1c221f;
+    --surface-2: #232a26;
+    --ink: #eef2ee;
+    --ink-2: #b4beb8;
+    --line: #333c37;
+    --line-strong: #87918b;
+    --wordmark: #8fd69b;
+    --primary: #86d494;
+    --primary-hover: #a3e0ad;
+    --on-primary: #0f1f13;
+    --primary-soft: #1f3326;
+    --teal-ink: #6fd0c2;
+    --teal-soft: #1b302d;
+    --lime-soft: #262d1a;
+    --lime-border: #b2d35b;
+    --focus: #8ab4ff;
+    --error: #ff8a80;
+    --on-error: #2a0905;
+    --error-hover: #ffaba3;
+    --error-soft: #3a1f1d;
+    --tip-soft: #2f2a17;
+    --tip-border: #d6b54a;
+    --paper: #f4f6f2;
+    --chart-fill: #8fae3f;
+    --chart-grid: #2c3430;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --wave-lime: #8fae3f;
+  --wave-teal: #3c9a8d;
+  --bg: #141917;
+  --surface: #1c221f;
+  --surface-2: #232a26;
+  --ink: #eef2ee;
+  --ink-2: #b4beb8;
+  --line: #333c37;
+  --line-strong: #87918b;
+  --wordmark: #8fd69b;
+  --primary: #86d494;
+  --primary-hover: #a3e0ad;
+  --on-primary: #0f1f13;
+  --primary-soft: #1f3326;
+  --teal-ink: #6fd0c2;
+  --teal-soft: #1b302d;
+  --lime-soft: #262d1a;
+  --lime-border: #b2d35b;
+  --focus: #8ab4ff;
+  --error: #ff8a80;
+  --on-error: #2a0905;
+  --error-hover: #ffaba3;
+  --error-soft: #3a1f1d;
+  --tip-soft: #2f2a17;
+  --tip-border: #d6b54a;
+  --paper: #f4f6f2;
+  --chart-fill: #8fae3f;
+  --chart-grid: #2c3430;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
 }
 
 *,
@@ -44,9 +141,10 @@ body {
   font-size: 1.0625rem;
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4 {
   line-height: 1.2;
   margin: 0 0 0.5rem;
+  font-weight: 700;
 }
 h1 { font-size: 1.75rem; }
 h2 { font-size: 1.3rem; }
@@ -91,7 +189,7 @@ textarea {
   top: -100px;
   z-index: 100;
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
   padding: 12px 16px;
   border-radius: 8px;
   font-weight: 700;
@@ -121,6 +219,7 @@ textarea {
 /* ---------- Tab bar ---------- */
 
 .tabbar {
+  box-shadow: 0 -4px 16px rgba(17, 17, 17, 0.05);
   position: fixed;
   inset: auto 0 0 0;
   z-index: 10;
@@ -176,25 +275,29 @@ textarea {
   border-radius: 999px;
   border: 2px solid var(--primary);
   background: var(--primary);
-  color: #fff;
+  color: var(--on-primary);
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.08);
 }
 .btn:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
 .btn-secondary {
   background: var(--surface);
   color: var(--primary);
+  box-shadow: none;
 }
 .btn-secondary:hover { background: var(--primary-soft); }
 .btn-danger {
   background: var(--error);
   border-color: var(--error);
+  color: var(--on-error);
 }
-.btn-danger:hover { background: #8f1e18; border-color: #8f1e18; }
+.btn-danger:hover { background: var(--error-hover); border-color: var(--error-hover); }
 .btn-ghost {
   background: transparent;
   border-color: transparent;
+  box-shadow: none;
   color: var(--primary);
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -215,6 +318,7 @@ textarea {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+  box-shadow: var(--shadow);
   padding: 16px;
 }
 
@@ -229,7 +333,7 @@ textarea {
 .callout p:last-child { margin-bottom: 0; }
 .callout-success { background: var(--primary-soft); border: 2px solid var(--primary); }
 .callout-error { background: var(--error-soft); border: 2px solid var(--error); }
-.callout-tip { background: var(--sun-soft); border: 2px solid #8a6a00; }
+.callout-tip { background: var(--tip-soft); border: 2px solid var(--tip-border); }
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -241,3 +345,83 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Form controls ---------- */
+
+.field-label {
+  display: block;
+  font-weight: 700;
+  padding: 0;
+  margin-bottom: 6px;
+}
+.field-help {
+  color: var(--ink-2);
+  font-size: 0.95rem;
+  margin: -2px 0 8px;
+}
+.field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 6px 0 0;
+  color: var(--error);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.field-error svg { flex: none; width: 20px; height: 20px; margin-top: 1px; }
+
+.input {
+  display: block;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 8px 12px;
+  border: 2px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.input:focus-visible { border-color: var(--focus); }
+.input[aria-invalid='true'] { border-color: var(--error); border-width: 3px; }
+textarea.input { resize: vertical; line-height: 1.4; }
+.input-number { max-width: 9rem; font-size: 1.15rem; }
+
+/* Segmented control built from radio buttons. Selected = filled + bold + underlined. */
+.segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  border: 2px solid var(--line-strong);
+  border-radius: 12px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+.segmented label { display: flex; }
+.segmented input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.segmented label > span {
+  display: grid;
+  place-items: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.segmented label + label > span { border-left: 2px solid var(--line-strong); }
+.segmented input:checked + span {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+.segmented input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: -5px; }
+
+/* ---------- Page header with wave accent ---------- */
+
+.page-header {
+  position: relative;
+  margin: -20px -16px 8px;
+  padding: 52px 16px 4px;
+}
+.page-header-text { position: relative; z-index: 1; }
+.page-header h1 { margin-bottom: 4px; }

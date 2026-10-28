@@ -1,17 +1,18 @@
-import PageHeading from '../components/PageHeading'
+import { PageHeader } from '../components/PageHeading'
 import FlipCard from '../components/learn/FlipCard'
 import QuickCheck from '../components/learn/QuickCheck'
 import { PartThumbnail } from '../components/diagram/parts'
 import { AlertIcon, BulbIcon } from '../components/Icons'
 import { learn, type ComponentCard } from '../content'
-import '../components/ChoiceGroup.css'
+import '../components/chips.css'
 import './Learn.css'
 
 export default function Learn() {
   return (
     <div className="page learn-page">
-      <PageHeading>Learn the Components</PageHeading>
-      <p className="page-intro">{learn.intro}</p>
+      <PageHeader title="Learn the Components">
+        <p className="page-intro">{learn.intro}</p>
+      </PageHeader>
 
       <section className="section" aria-labelledby="parts-title">
         <h2 id="parts-title">Parts in your kit</h2>

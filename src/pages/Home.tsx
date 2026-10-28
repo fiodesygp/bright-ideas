@@ -1,7 +1,8 @@
 import { Link } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
 import PageHeading from '../components/PageHeading'
-import { ArrowRightIcon, BookIcon, LeafIcon, PlugIcon } from '../components/Icons'
+import Waves from '../components/Waves'
+import { ArrowRightIcon, BookIcon, ChartIcon, LeafIcon, PlugIcon } from '../components/Icons'
 import { home } from '../content'
 import { CURRENT_PLANT_ID, getEntries } from '../data/db'
 import { useSettings } from '../data/settings'
@@ -10,6 +11,7 @@ import './Home.css'
 
 const SECTION_ICONS: Record<string, typeof LeafIcon> = {
   '/log': LeafIcon,
+  '/log/dashboard': ChartIcon,
   '/learn': BookIcon,
   '/connect': PlugIcon,
 }
@@ -21,11 +23,12 @@ export default function Home() {
 
   return (
     <div className="page home">
-      <header className="home-hero">
-        <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" width="56" height="56" />
-        <div>
+      <header className="hero">
+        <Waves variant="hero" />
+        <div className="hero-text">
           <PageHeading>{home.appName}</PageHeading>
-          <p className="home-tagline">{home.tagline}</p>
+          <p className="hero-tagline">{home.tagline}</p>
+          <p className="hero-subtitle">{home.subtitle}</p>
         </div>
       </header>
 
@@ -64,9 +67,12 @@ export default function Home() {
               {entries.length} {entries.length === 1 ? 'entry' : 'entries'} so far.
             </p>
           ) : (
-            <p>No log entries yet. Check your plant and add your first entry.</p>
+            <p>No log entries yet. Measure your plant and add your first entry.</p>
           )}
-          <Link className="btn" to="/log">{latest ? 'Add a new entry' : 'Start your log'}</Link>
+          <div className="btn-row">
+            <Link className="btn" to="/log">{latest ? 'Add a new entry' : 'Start your log'}</Link>
+            {latest && <Link className="btn btn-secondary" to="/log/dashboard">Open my Dashboard</Link>}
+          </div>
         </section>
       )}
     </div>

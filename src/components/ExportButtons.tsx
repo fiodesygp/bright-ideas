@@ -29,19 +29,24 @@ export default function ExportButtons() {
     setJob({ format, entries, photoUrls })
   }
 
-  // Once the off-screen sheet is in the page, capture it.
+  // The PDF is built from data. The image needs the off-screen sheet in the page first.
   useEffect(() => {
-    if (!job || !sheetRef.current) return
     const node = sheetRef.current
+    if (!job || (job.format === 'png' && !node)) return
     let cancelled = false
     ;(async () => {
       try {
-        const { exportImage, exportPdf } = await import('../lib/exportLog')
         const name = `planting-log-${todayISO()}`
-        if (job.format === 'png') await exportImage(node, `${name}.png`)
-        else await exportPdf(node, `${name}.pdf`)
+        if (job.format === 'png') {
+          const { exportImage } = await import('../lib/exportImage')
+          await exportImage(node!, `${name}.png`)
+        } else {
+          const { exportPdf } = await import('../lib/exportPdf')
+          await exportPdf({ entries: job.entries, plantName: settings.plantName, unit: settings.heightUnit }, `${name}.pdf`)
+        }
         if (!cancelled) setMessage(job.format === 'pdf' ? 'Your PDF is ready. Check your downloads.' : 'Your image is ready. Check your downloads.')
-      } catch {
+      } catch (err) {
+        console.error('Export failed', err)
         if (!cancelled) setMessage('Something went wrong. Please try again.')
       } finally {
         job.photoUrls.forEach((u) => URL.revokeObjectURL(u))
@@ -51,7 +56,7 @@ export default function ExportButtons() {
     return () => {
       cancelled = true
     }
-  }, [job])
+  }, [job, settings.plantName, settings.heightUnit])
 
   return (
     <div className="export-buttons">
@@ -64,7 +69,7 @@ export default function ExportButtons() {
         </button>
       </div>
       <p className="export-status" role="status">{message}</p>
-      {job &&
+      {job?.format === 'png' &&
         createPortal(
           <div className="export-offscreen" aria-hidden="true">
             <ExportSheet ref={sheetRef} plantName={settings.plantName} unit={settings.heightUnit} entries={job.entries} photoUrls={job.photoUrls} />

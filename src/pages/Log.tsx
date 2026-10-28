@@ -1,94 +1,53 @@
-import { useState, type MouseEvent } from 'react'
+import { Link } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
-import PageHeading from '../components/PageHeading'
-import ConfirmDialog from '../components/ConfirmDialog'
+import { PageHeader } from '../components/PageHeading'
 import LogForm from '../components/log/LogForm'
-import HeightChart from '../components/log/HeightChart'
 import EntryCard from '../components/log/EntryCard'
-import ExportButtons from '../components/ExportButtons'
-import { reflectionPrompts } from '../content'
-import { CURRENT_PLANT_ID, db, getEntries, type LogEntry } from '../data/db'
+import { ArrowRightIcon, ChartIcon } from '../components/Icons'
+import { CURRENT_PLANT_ID, getEntries } from '../data/db'
 import { useSettings } from '../data/settings'
-import { formatDate } from '../lib/dates'
 import './Log.css'
+
+const RECENT = 3
 
 export default function Log() {
   const { settings } = useSettings()
   const entries = useLiveQuery(() => getEntries(CURRENT_PLANT_ID), [])
-  const [toDelete, setToDelete] = useState<LogEntry | null>(null)
-
-  // One prompt per entry, rotating through the list in order.
-  const prompt = reflectionPrompts[(entries?.length ?? 0) % reflectionPrompts.length]
 
   return (
     <div className="page log-page">
-      <PageHeading>Planting Log</PageHeading>
-      <p className="page-intro">Tracking: <strong>{settings.plantName}</strong></p>
-      <nav aria-label="On this page" className="jump-links">
-        <a href="#history" onClick={jump('history')}>History</a>
-        <a href="#growth" onClick={jump('growth')}>Growth chart</a>
-      </nav>
+      <PageHeader title="Planting Log">
+        <p className="page-intro">Tracking: <strong>{settings.plantName}</strong></p>
+      </PageHeader>
 
-      {entries && <LogForm prompt={prompt} />}
+      <Link className="btn btn-secondary btn-block dashboard-btn" to="/log/dashboard">
+        <ChartIcon width={22} height={22} /> Open my Dashboard
+      </Link>
 
-      <section className="section" aria-labelledby="growth" >
-        <h2 id="growth" tabIndex={-1}>Growth chart</h2>
-        {entries && entries.length > 0 ? (
-          <div className="card">
-            <HeightChart entries={entries} unit={settings.heightUnit} />
-            {entries.length === 1 && <p className="field-help">Add one more entry to see a line.</p>}
-          </div>
-        ) : (
-          <p className="page-intro">Your chart will show up after your first entry.</p>
-        )}
-      </section>
+      <LogForm />
 
-      <section className="section" aria-labelledby="history">
-        <h2 id="history" tabIndex={-1}>History</h2>
+      <section className="section" aria-labelledby="recent-title">
+        <h2 id="recent-title">Recent entries</h2>
         {entries && entries.length > 0 ? (
           <>
-            <p className="page-intro">Newest first. {entries.length} {entries.length === 1 ? 'entry' : 'entries'}.</p>
             <ol className="timeline">
-              {entries.map((e) => (
+              {entries.slice(0, RECENT).map((e) => (
                 <li key={e.id}>
-                  <EntryCard entry={e} unit={settings.heightUnit} onDelete={setToDelete} />
+                  <EntryCard entry={e} unit={settings.heightUnit} plantName={settings.plantName} />
                 </li>
               ))}
             </ol>
-            <div className="card export-card">
-              <h3>Save or share your log</h3>
-              <p>Make a file you can print or send to your facilitator.</p>
-              <ExportButtons />
-            </div>
+            <p className="see-all">
+              <Link to="/log/dashboard">
+                {entries.length > RECENT ? `See all ${entries.length} entries` : 'See your growth chart'} on your Dashboard
+                <ArrowRightIcon width={18} height={18} />
+              </Link>
+            </p>
           </>
         ) : (
-          <p className="page-intro">No entries yet.</p>
+          <p className="page-intro">No entries yet. Your first one will show up here.</p>
         )}
       </section>
-
-      <ConfirmDialog
-        open={!!toDelete}
-        title="Delete this entry?"
-        confirmLabel="Delete"
-        onCancel={() => setToDelete(null)}
-        onConfirm={async () => {
-          if (toDelete) await db.entries.delete(toDelete.id)
-          setToDelete(null)
-          document.getElementById('history')?.focus()
-        }}
-      >
-        <p>The entry from {toDelete && formatDate(toDelete.date)} will be gone for good.</p>
-      </ConfirmDialog>
     </div>
   )
-}
-
-// Hash routing owns the URL hash, so in-page links scroll and move focus by hand.
-function jump(id: string) {
-  return (e: MouseEvent) => {
-    e.preventDefault()
-    const el = document.getElementById(id)
-    el?.scrollIntoView({ block: 'start' })
-    el?.focus({ preventScroll: true })
-  }
 }
