@@ -4,7 +4,7 @@ A companion web app for the **miniAgriPV kit**. 7th graders build a mini agrivol
 
 ## For facilitators
 
-- **Open the app:** https://fiodesygp.github.io/bright-ideas/
+- **Open the app:** https://fiodesygp.github.io/bright-ideas/ or https://brightideas-agripv.vercel.app (the same app). Pick one link for your class and stick with it: each site keeps its own saved log, so entries made on one don't show up on the other.
 - **Install it on a phone or tablet:** open the link once while online, then add it to the home screen.
   - iPhone or iPad (Safari): tap **Share**, then **Add to Home Screen**.
   - Android (Chrome): tap the **⋮** menu, then **Add to Home screen** (or **Install app**).
@@ -98,9 +98,9 @@ The same code deploys to two places. Only the base path differs, and `vite.confi
 
 The base also sets the PWA's `scope`, `start_url`, and offline fallback. The app uses `HashRouter`: routes live after the `#` (for example `…/#/log/dashboard`), so the router needs no basename and neither host needs rewrite rules. That's why there is no `vercel.json`.
 
-**GitHub Pages.** Pushing to `main` runs `.github/workflows/deploy.yml`, which builds the app and deploys it. In the repo settings, Pages → Source must be set to **GitHub Actions**. The PDF/UA check runs as a separate workflow, so it never blocks a deploy.
+**GitHub Pages** (https://fiodesygp.github.io/bright-ideas/). Pushing to `main` runs `.github/workflows/deploy.yml`, which builds the app and deploys it. In the repo settings, Pages → Source must be set to **GitHub Actions**. The PDF/UA check runs as a separate workflow, so it never blocks a deploy.
 
-**Vercel.** Import the repo in Vercel and keep the detected Vite preset: build command `npm run build`, output directory `dist`. Vercel sets `VERCEL=1` during its builds, which switches the base to `/`. Vercel then redeploys on every push to `main`.
+**Vercel** (https://brightideas-agripv.vercel.app). Import the repo in Vercel and keep the detected Vite preset: build command `npm run build`, output directory `dist`. Vercel sets `VERCEL=1` during its builds, which switches the base to `/`. Vercel then redeploys on every push to `main`.
 
 To check a build locally:
 
