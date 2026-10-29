@@ -87,6 +87,24 @@ Install veraPDF from https://docs.verapdf.org/install/. You can also open any ex
 
 **By hand with PAC** (Windows): download the free [PAC (PDF Accessibility Checker)](https://pac.pdf-accessibility.org) and open an exported PDF. PAC checks PDF/UA and the Matterhorn Protocol, and its "Screen reader preview" shows the reading order. Some PAC checkpoints need a human to judge them, for example whether the alt text is meaningful. Review those by hand.
 
-## Deployment
+## Deploying
 
-Pushing to `main` runs `.github/workflows/deploy.yml`, which builds the app and deploys it to GitHub Pages. In the repo settings, Pages → Source must be set to **GitHub Actions**. The PDF/UA check runs as a separate workflow, so it never blocks a deploy.
+The same code deploys to two places. Only the base path differs, and `vite.config.ts` picks it automatically.
+
+| Host | Live URL | Base path |
+| --- | --- | --- |
+| GitHub Pages | https://fiodesygp.github.io/bright-ideas/ | `/bright-ideas/` |
+| Vercel | https://brightideas-agripv.vercel.app | `/` |
+
+The base also sets the PWA's `scope`, `start_url`, and offline fallback. The app uses `HashRouter`: routes live after the `#` (for example `…/#/log/dashboard`), so the router needs no basename and neither host needs rewrite rules. That's why there is no `vercel.json`.
+
+**GitHub Pages.** Pushing to `main` runs `.github/workflows/deploy.yml`, which builds the app and deploys it. In the repo settings, Pages → Source must be set to **GitHub Actions**. The PDF/UA check runs as a separate workflow, so it never blocks a deploy.
+
+**Vercel.** Import the repo in Vercel and keep the detected Vite preset: build command `npm run build`, output directory `dist`. Vercel sets `VERCEL=1` during its builds, which switches the base to `/`. Vercel then redeploys on every push to `main`.
+
+To check a build locally:
+
+```sh
+npm run build && npx vite preview                # http://localhost:4173/bright-ideas/
+VERCEL=1 npm run build && VERCEL=1 npx vite preview   # http://localhost:4173/
+```

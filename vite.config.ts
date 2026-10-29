@@ -2,8 +2,9 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// GitHub Pages serves the app from https://fiodesygp.github.io/bright-ideas/
-const base = '/bright-ideas/'
+// GitHub Pages serves the app from https://fiodesygp.github.io/bright-ideas/,
+// Vercel from the domain root. Vercel sets VERCEL=1 during its builds.
+const base = process.env.VERCEL ? '/' : '/bright-ideas/'
 
 // https://vite.dev/config/
 export default defineConfig({

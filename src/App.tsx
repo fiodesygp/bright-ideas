@@ -10,7 +10,8 @@ import CircuitBuilder from './pages/CircuitBuilder'
 import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 
-// HashRouter keeps refreshes and deep links working on GitHub Pages.
+// HashRouter keeps refreshes and deep links working on any static host, and
+// needs no basename: routes live after the #, whatever path the app is served from.
 export default function App() {
   return (
     <SettingsProvider>
