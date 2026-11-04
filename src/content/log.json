@@ -22,7 +22,8 @@
   "announce": {
     "photoAdded": "Photo added",
     "photoRemoved": "Photo removed",
-    "saved": "Saved to your Planting Log!"
+    "saved": "Saved to your Planting Log!",
+    "changesSaved": "Changes saved"
   },
   "savedText": "See it below or on your Dashboard.",
   "newBadge": "Just saved"

@@ -62,6 +62,23 @@ npm run lint
 
 Stack: React, TypeScript, Vite, React Router (HashRouter, so refreshes work on GitHub Pages), Dexie (IndexedDB), vite-plugin-pwa (offline), PDFKit (tagged PDF export), and html-to-image (PNG export). Encode Sans is self-hosted through `@fontsource`, so the app makes no font requests and works offline.
 
+### Optional browser checks
+
+`scripts/checks/` has two Playwright scripts for the Planting Log. They are not part of the build or CI, and Playwright is not a project dependency: `npx` downloads the pinned versions into a temporary folder.
+
+- `logform.mjs` checks the Log form at 360, 768 and 1280 px in light and dark mode, with and without a photo, and with old entries already saved. It covers field order, the "Photo added", "Photo removed" and "Saved" announcements, focus, axe (WCAG 2.2 AA), 44 px targets, sideways scrolling, and reduced motion.
+- `edit.mjs` checks editing an entry on the Dashboard: field order, Remove photo, the "Changes saved" announcement, and focus returning to the Edit button.
+
+With the dev server running (`npm run dev`), in a second terminal:
+
+```sh
+npx -y playwright@1.64.1 install chromium   # once, downloads the browser
+npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/logform.mjs
+npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/edit.mjs
+```
+
+Each script prints PASS or FAIL per check and ends with `ALL PASSED` or the number that failed, and exits non-zero on any failure. To test another server, pass its URL, for example `… node scripts/checks/logform.mjs http://localhost:4173/bright-ideas/`. `logform.mjs` saves screenshots to `bright-ideas-checks` in your system temp folder; set `SHOTS_DIR` to put them somewhere else. Don't commit them. `scripts/checks/shots/` is git-ignored if you want them next to the scripts.
+
 ## Design tokens
 
 Every color is a CSS variable in `src/index.css`, with a light set and a matching dark set. The dark set is used when Settings → Theme is "Dark", or when it is "System" and the device is dark. The brand colors (`--brand-green`, `--brand-lime`, `--brand-teal`) are for decoration only. They are about 2:1 on white, so text and buttons use the deeper `--primary` and `--teal-ink` shades, which meet WCAG AA. Circuit diagrams always draw on light `--paper`, so the red and black wires match the real kit in both themes.

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { AlertIcon, ArrowRightIcon, CameraIcon, LeafIcon, TrashIcon } from '../Icons'
+import { useAnnounce } from '../Announcer'
 import Waves from '../Waves'
 import { logContent } from '../../content'
 import { CURRENT_PLANT_ID, db, fromCm, toCm, type LogEntry } from '../../data/db'
@@ -45,8 +46,7 @@ export default function LogForm({ entry, onDone, onSaved }: Props) {
   const [errors, setErrors] = useState<Errors>({})
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [photoBusy, setPhotoBusy] = useState(false)
-  const [announcement, setAnnouncement] = useState('')
-  const announceTimer = useRef<number | undefined>(undefined)
+  const announce = useAnnounce()
   const summaryRef = useRef<HTMLDivElement>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
   const dateRef = useRef<HTMLInputElement>(null)
@@ -63,20 +63,12 @@ export default function LogForm({ entry, onDone, onSaved }: Props) {
     if (editing) editTitleRef.current?.focus()
   }, [editing])
 
-  useEffect(() => () => window.clearTimeout(announceTimer.current), [])
-
   useEffect(() => {
     if (!focusPhotoNext.current) return
     focusPhotoNext.current = false
     photoInputRef.current?.focus()
   }, [photoUrl])
 
-  // Clear first so the same message (e.g. "Photo added" twice) is read again.
-  const announce = (msg: string) => {
-    setAnnouncement('')
-    window.clearTimeout(announceTimer.current)
-    announceTimer.current = window.setTimeout(() => setAnnouncement(msg), 100)
-  }
   const focusPhotoInput = () => { focusPhotoNext.current = true }
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
@@ -138,6 +130,7 @@ export default function LogForm({ entry, onDone, onSaved }: Props) {
     }
     if (entry) {
       await db.entries.update(entry.id, { ...data, updatedAt: Date.now() })
+      announce(say.changesSaved)
       onDone?.()
       return
     }
@@ -185,7 +178,6 @@ export default function LogForm({ entry, onDone, onSaved }: Props) {
           <SunSprout />
         </div>
       )}
-      <p className="visually-hidden" role="status">{announcement}</p>
       <p className="required-note">Fields marked <span aria-hidden="true">*</span><span className="visually-hidden">with a star</span> are required.</p>
 
       {errorList.length > 0 && (

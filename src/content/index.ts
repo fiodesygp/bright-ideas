@@ -22,7 +22,7 @@ export interface LogContent {
     | 'photo' | 'photoHelp' | 'photoAdd' | 'photoAddHint' | 'photoSkip' | 'photoChange' | 'photoRemove',
     string
   >
-  announce: Record<'photoAdded' | 'photoRemoved' | 'saved', string>
+  announce: Record<'photoAdded' | 'photoRemoved' | 'saved' | 'changesSaved', string>
   savedText: string
   newBadge: string
   dashboardIntro: string
