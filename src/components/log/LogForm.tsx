@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import { AlertIcon, CameraIcon, CheckIcon, TrashIcon } from '../Icons'
+import { AlertIcon, ArrowRightIcon, CameraIcon, LeafIcon, TrashIcon } from '../Icons'
+import Waves from '../Waves'
 import { logContent } from '../../content'
 import { CURRENT_PLANT_ID, db, fromCm, toCm, type LogEntry } from '../../data/db'
 import { useSettings } from '../../data/settings'
@@ -8,6 +9,7 @@ import { todayISO } from '../../lib/dates'
 import { fmtNum } from '../../lib/labels'
 import { resizePhoto } from '../../lib/photo'
 import { useObjectUrl } from '../../lib/useObjectUrl'
+import SunSprout from './SunSprout'
 import './LogForm.css'
 
 const NOTE_MAX = 280
@@ -22,15 +24,17 @@ interface FormState {
 
 type Errors = Partial<Record<'date' | 'height' | 'photo', string>>
 
-const { fields } = logContent
+const { fields, announce: say } = logContent
 
 interface Props {
   /** When set, the form edits this entry instead of adding a new one. */
   entry?: LogEntry
   onDone?: () => void
+  /** Called with the new entry's id after a new entry is saved. */
+  onSaved?: (id: number) => void
 }
 
-export default function LogForm({ entry, onDone }: Props) {
+export default function LogForm({ entry, onDone, onSaved }: Props) {
   const { settings } = useSettings()
   const unit = settings.heightUnit
   const [form, setForm] = useState<FormState>(() =>
@@ -41,9 +45,14 @@ export default function LogForm({ entry, onDone }: Props) {
   const [errors, setErrors] = useState<Errors>({})
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const [photoBusy, setPhotoBusy] = useState(false)
+  const [announcement, setAnnouncement] = useState('')
+  const announceTimer = useRef<number | undefined>(undefined)
   const summaryRef = useRef<HTMLDivElement>(null)
-  const savedRef = useRef<HTMLDivElement>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const dateRef = useRef<HTMLInputElement>(null)
+  // Adding or removing a photo swaps the photo controls. Once the new ones
+  // have rendered, move focus to whichever file input is showing.
+  const focusPhotoNext = useRef(false)
   const photoUrl = useObjectUrl(form.photo)
   const id = useId()
   const editing = !!entry
@@ -53,6 +62,22 @@ export default function LogForm({ entry, onDone }: Props) {
   useEffect(() => {
     if (editing) editTitleRef.current?.focus()
   }, [editing])
+
+  useEffect(() => () => window.clearTimeout(announceTimer.current), [])
+
+  useEffect(() => {
+    if (!focusPhotoNext.current) return
+    focusPhotoNext.current = false
+    photoInputRef.current?.focus()
+  }, [photoUrl])
+
+  // Clear first so the same message (e.g. "Photo added" twice) is read again.
+  const announce = (msg: string) => {
+    setAnnouncement('')
+    window.clearTimeout(announceTimer.current)
+    announceTimer.current = window.setTimeout(() => setAnnouncement(msg), 100)
+  }
+  const focusPhotoInput = () => { focusPhotoNext.current = true }
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((f) => ({ ...f, [key]: value }))
@@ -76,12 +101,20 @@ export default function LogForm({ entry, onDone }: Props) {
     setErrors((e) => ({ ...e, photo: undefined }))
     try {
       set('photo', await resizePhoto(file))
+      announce(say.photoAdded)
+      focusPhotoInput()
     } catch {
       setErrors((e) => ({ ...e, photo: 'We could not open that photo. Try a different one.' }))
     } finally {
       setPhotoBusy(false)
       if (photoInputRef.current) photoInputRef.current.value = ''
     }
+  }
+
+  function removePhoto() {
+    set('photo', null)
+    announce(say.photoRemoved)
+    focusPhotoInput()
   }
 
   async function onSubmit(e: FormEvent) {
@@ -108,10 +141,11 @@ export default function LogForm({ entry, onDone }: Props) {
       onDone?.()
       return
     }
-    await db.entries.add({ ...data, plantId: CURRENT_PLANT_ID, createdAt: Date.now() })
+    const newId = await db.entries.add({ ...data, plantId: CURRENT_PLANT_ID, createdAt: Date.now() })
     setForm({ date: form.date, height: '', note: '', photo: null })
     setStatus('saved')
-    requestAnimationFrame(() => savedRef.current?.focus())
+    announce(say.saved)
+    onSaved?.(newId)
   }
 
   const errorList = Object.entries(errors).filter(([, msg]) => msg) as [keyof Errors, string][]
@@ -125,17 +159,33 @@ export default function LogForm({ entry, onDone }: Props) {
       </p>
     )
   const titleId = fieldId('title')
+  const photoInput = (
+    <input
+      ref={photoInputRef}
+      id={fieldId('photo')}
+      className="visually-hidden"
+      type="file"
+      accept="image/*"
+      aria-describedby={describedBy('photo', fieldId('photo-help'))}
+      onChange={(e) => onPhoto(e.target.files?.[0])}
+    />
+  )
 
   return (
     <form className={`log-form${editing ? ' is-editing' : ' card'}`} onSubmit={onSubmit} noValidate aria-labelledby={titleId}>
       {editing ? (
         <h3 id={titleId} ref={editTitleRef} tabIndex={-1}>Edit entry</h3>
       ) : (
-        <>
-          <h2 id={titleId}>New entry</h2>
-          <p className="page-intro">{logContent.intro}</p>
-        </>
+        <div className="log-hero">
+          <Waves variant="header" />
+          <div className="log-hero-text">
+            <h2 id={titleId}>{logContent.heading}</h2>
+            <p className="page-intro">{logContent.intro}</p>
+          </div>
+          <SunSprout />
+        </div>
       )}
+      <p className="visually-hidden" role="status">{announcement}</p>
       <p className="required-note">Fields marked <span aria-hidden="true">*</span><span className="visually-hidden">with a star</span> are required.</p>
 
       {errorList.length > 0 && (
@@ -155,10 +205,44 @@ export default function LogForm({ entry, onDone }: Props) {
         </div>
       )}
 
+      <div className="field photo-field">
+        <span className="field-label">{fields.photo}</span>
+        {photoUrl ? (
+          <div className="photo-preview">
+            <img src={photoUrl} alt="The photo you added to this entry" />
+            <div className="btn-row">
+              <label className="btn btn-secondary photo-button">
+                <CameraIcon width={20} height={20} />
+                {photoBusy ? 'Loading photo…' : <>{fields.photoChange}<span className="visually-hidden"> photo</span></>}
+                {photoInput}
+              </label>
+              <button type="button" className="btn btn-secondary" onClick={removePhoto} disabled={photoBusy}>
+                <TrashIcon width={20} height={20} /> {fields.photoRemove}<span className="visually-hidden"> photo</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <label className="photo-drop">
+            <span className="photo-drop-icon"><CameraIcon width={30} height={30} /></span>
+            <span className="photo-drop-title">{photoBusy ? 'Loading photo…' : fields.photoAdd}</span>
+            <span className="photo-drop-hint">{fields.photoAddHint}</span>
+            {photoInput}
+          </label>
+        )}
+        {fieldError('photo')}
+        <p className="field-help photo-help" id={fieldId('photo-help')}>{fields.photoHelp}</p>
+        {!editing && !photoUrl && (
+          <button type="button" className="btn btn-ghost photo-skip" onClick={() => dateRef.current?.focus()}>
+            {fields.photoSkip} <ArrowRightIcon width={18} height={18} />
+          </button>
+        )}
+      </div>
+
       <div className="form-row">
         <div className="field">
           <label className="field-label" htmlFor={fieldId('date')}>{fields.date} <Req /></label>
           <input
+            ref={dateRef}
             id={fieldId('date')}
             className="input"
             type="date"
@@ -205,6 +289,7 @@ export default function LogForm({ entry, onDone }: Props) {
           id={fieldId('note')}
           className="input"
           rows={3}
+          placeholder={fields.notePlaceholder}
           maxLength={NOTE_MAX}
           value={form.note}
           onChange={(e) => set('note', e.target.value)}
@@ -213,38 +298,10 @@ export default function LogForm({ entry, onDone }: Props) {
         <p className="field-help counter" id={fieldId('note-count')}>{form.note.length} of {NOTE_MAX} letters</p>
       </div>
 
-      <div className="field">
-        <span className="field-label">{fields.photo}</span>
-        <p className="field-help" id={fieldId('photo-help')}>{fields.photoHelp}</p>
-        {photoUrl ? (
-          <div className="photo-preview">
-            <img src={photoUrl} alt="The photo you added to this entry" />
-            <button type="button" className="btn btn-secondary" onClick={() => set('photo', null)}>
-              <TrashIcon width={20} height={20} /> Remove photo
-            </button>
-          </div>
-        ) : (
-          <label className="btn btn-secondary photo-button">
-            <CameraIcon width={22} height={22} />
-            {photoBusy ? 'Loading photo…' : 'Take or choose a photo'}
-            <input
-              ref={photoInputRef}
-              id={fieldId('photo')}
-              className="visually-hidden"
-              type="file"
-              accept="image/*"
-              aria-describedby={describedBy('photo', fieldId('photo-help'))}
-              onChange={(e) => onPhoto(e.target.files?.[0])}
-            />
-          </label>
-        )}
-        {fieldError('photo')}
-      </div>
-
       {status === 'saved' && (
-        <div className="callout callout-success" role="status" tabIndex={-1} ref={savedRef}>
-          <CheckIcon />
-          <p><strong>Saved!</strong> See it in your recent entries below.</p>
+        <div className="callout callout-success saved-callout">
+          <LeafIcon />
+          <p><strong>{say.saved}</strong> {logContent.savedText}</p>
         </div>
       )}
 

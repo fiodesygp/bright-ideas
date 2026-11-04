@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { PageHeader } from '../components/PageHeading'
@@ -13,6 +14,7 @@ const RECENT = 3
 export default function Log() {
   const { settings } = useSettings()
   const entries = useLiveQuery(() => getEntries(CURRENT_PLANT_ID), [])
+  const [savedId, setSavedId] = useState<number>()
 
   return (
     <div className="page log-page">
@@ -24,7 +26,7 @@ export default function Log() {
         <ChartIcon width={22} height={22} /> Open my Dashboard
       </Link>
 
-      <LogForm />
+      <LogForm onSaved={setSavedId} />
 
       <section className="section" aria-labelledby="recent-title">
         <h2 id="recent-title">Recent entries</h2>
@@ -33,7 +35,7 @@ export default function Log() {
             <ol className="timeline">
               {entries.slice(0, RECENT).map((e) => (
                 <li key={e.id}>
-                  <EntryCard entry={e} unit={settings.heightUnit} plantName={settings.plantName} />
+                  <EntryCard entry={e} unit={settings.heightUnit} plantName={settings.plantName} fresh={e.id === savedId} />
                 </li>
               ))}
             </ol>

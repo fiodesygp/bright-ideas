@@ -1,15 +1,29 @@
 {
-  "intro": "Measure your plant and save an entry. It takes about a minute.",
+  "intro": "Snap your plant, measure it, and tell its story. It takes about a minute.",
   "fields": {
     "date": "Date",
     "height": "Plant height",
     "heightHelp": "Measure from the soil to the top of the plant.",
-    "note": "Notes (optional)",
-    "noteHelp": "What did you notice? Keep it short.",
+    "note": "What happened? (optional)",
+    "noteHelp": "Try starting with \"I noticed…\", \"I changed…\" or \"Next I want to try…\".",
     "photo": "Photo (optional)",
-    "photoHelp": "Photos stay on this device."
+    "photoHelp": "Take a photo of your plant or your build. Leave out faces and names. Photos stay on this device.",
+    "notePlaceholder": "I noticed…",
+    "photoAdd": "Add a photo",
+    "photoAddHint": "Opens your camera or your photos",
+    "photoSkip": "No photo today",
+    "photoChange": "Change",
+    "photoRemove": "Remove"
   },
   "dashboardIntro": "See how your plant has grown. Share it with your family.",
   "emptyTitle": "No entries yet",
-  "emptyText": "Measure your plant and add your first entry. Your chart and photos will show up here."
+  "emptyText": "Measure your plant and add your first entry. Your chart and photos will show up here.",
+  "heading": "What did you grow today?",
+  "announce": {
+    "photoAdded": "Photo added",
+    "photoRemoved": "Photo removed",
+    "saved": "Saved to your Planting Log!"
+  },
+  "savedText": "See it below or on your Dashboard.",
+  "newBadge": "Just saved"
 }

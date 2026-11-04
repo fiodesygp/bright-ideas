@@ -2,9 +2,26 @@
   display: grid;
   gap: 20px;
 }
-.log-form > h2,
 .log-form > h3 { margin: 0; }
-.log-form > .page-intro { margin: -14px 0 0; }
+
+/* Warm header: lime wave in the top-right corner with the sun rising out of it. */
+.log-form.card { position: relative; overflow: hidden; }
+.log-hero {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+/* Keep the wave in its corner so it never sits behind text. */
+.log-hero > .waves { inset: 0 0 auto auto; width: 38%; height: 58px; }
+.log-hero > .waves .wave-lime { width: 100%; height: 100%; }
+.log-hero-text { position: relative; z-index: 1; flex: 1; min-width: 0; }
+.log-hero h2 { margin: 0; font-size: 1.45rem; line-height: 1.2; }
+.log-hero .page-intro { margin: 6px 0 0; }
+.sun-sprout { position: relative; z-index: 1; flex: none; width: 92px; height: auto; align-self: flex-start; }
+@media (min-width: 560px) {
+  .log-hero h2 { font-size: 1.65rem; }
+  .sun-sprout { width: 112px; }
+}
 .required-note { margin: -14px 0 0; font-size: 0.95rem; color: var(--ink-2); }
 .req { color: var(--error); font-weight: 700; }
 .unit-hint { font-weight: 400; color: var(--ink-2); }
@@ -36,17 +53,56 @@
 .unit-link a { display: inline-flex; align-items: center; min-height: var(--tap); }
 
 .photo-button { cursor: pointer; }
-.photo-button:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+.photo-button:has(input:focus-visible),
+.photo-drop:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* Big, friendly photo area at the top of the form. */
+.photo-drop {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 4px;
+  min-height: 168px;
+  padding: 18px 16px;
+  border: 2px dashed var(--lime-border);
+  border-radius: var(--radius);
+  background: var(--lime-soft);
+  text-align: center;
+  cursor: pointer;
+}
+.photo-drop:hover { border-style: solid; }
+.photo-drop-icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.photo-drop-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+.photo-drop-hint { font-size: 0.95rem; color: var(--ink-2); }
+.photo-help { margin: 8px 0 0; }
+.photo-skip { margin: 2px 0 0 -12px; }
 
 .photo-preview {
   display: grid;
-  gap: 10px;
-  justify-items: start;
+  gap: 12px;
 }
 .photo-preview img {
-  max-height: 220px;
-  border-radius: 12px;
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: var(--radius);
   border: 1px solid var(--line);
+  background: var(--surface-2);
 }
+
+.input::placeholder { color: var(--ink-2); opacity: 1; }
+
+.saved-callout { animation: grow-in 360ms ease-out both; }
+.saved-callout svg { color: var(--primary); }
 
 .counter { margin: 4px 0 0; text-align: right; }

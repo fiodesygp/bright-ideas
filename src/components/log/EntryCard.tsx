@@ -4,7 +4,8 @@ import { formatDate } from '../../lib/dates'
 import { heightText } from '../../lib/labels'
 import { photoAlt } from '../../lib/stats'
 import { useObjectUrl } from '../../lib/useObjectUrl'
-import { EditIcon, TrashIcon } from '../Icons'
+import { logContent } from '../../content'
+import { EditIcon, LeafIcon, TrashIcon } from '../Icons'
 import LogForm from './LogForm'
 
 interface Props {
@@ -15,9 +16,11 @@ interface Props {
   editable?: boolean
   onDelete?: (entry: LogEntry) => void
   onViewPhoto?: (entry: LogEntry) => void
+  /** The entry was just saved: grow it in and label it. */
+  fresh?: boolean
 }
 
-export default function EntryCard({ entry, unit, plantName, editable, onDelete, onViewPhoto }: Props) {
+export default function EntryCard({ entry, unit, plantName, editable, onDelete, onViewPhoto, fresh }: Props) {
   const photoUrl = useObjectUrl(entry.photo)
   const [editing, setEditing] = useState(false)
   const editBtnRef = useRef<HTMLButtonElement>(null)
@@ -29,8 +32,19 @@ export default function EntryCard({ entry, unit, plantName, editable, onDelete, 
   const when = formatDate(entry.date)
 
   return (
-    <article className="entry" aria-labelledby={`entry-${entry.id}`}>
+    <article className={`entry${fresh ? ' entry-fresh' : ''}${photoUrl ? ' has-photo' : ''}`} aria-labelledby={`entry-${entry.id}`}>
+      <span className="entry-band" aria-hidden="true" />
+      {fresh && (
+        <p className="entry-badge">
+          <LeafIcon width={18} height={18} /> {logContent.newBadge}
+        </p>
+      )}
       <div className="entry-main">
+        <div className="entry-text">
+          <h3 id={`entry-${entry.id}`}>{formatDate(entry.date, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</h3>
+          <p className="entry-height"><span className="visually-hidden">Height: </span>{heightText(entry, unit)}</p>
+          {entry.note && <p className="entry-note">{entry.note}</p>}
+        </div>
         {photoUrl &&
           (onViewPhoto ? (
             <button type="button" className="entry-thumb" onClick={() => onViewPhoto(entry)}>
@@ -40,11 +54,6 @@ export default function EntryCard({ entry, unit, plantName, editable, onDelete, 
           ) : (
             <img className="entry-thumb" src={photoUrl} alt={photoAlt(entry, unit, plantName)} />
           ))}
-        <div className="entry-text">
-          <h3 id={`entry-${entry.id}`}>{formatDate(entry.date, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</h3>
-          <p className="entry-height"><span className="visually-hidden">Height: </span>{heightText(entry, unit)}</p>
-          {entry.note && <p className="entry-note">{entry.note}</p>}
-        </div>
       </div>
 
       {editable && !editing && (

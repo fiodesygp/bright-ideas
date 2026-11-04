@@ -15,8 +15,16 @@ export interface HomeContent {
 }
 
 export interface LogContent {
+  heading: string
   intro: string
-  fields: Record<'date' | 'height' | 'heightHelp' | 'note' | 'noteHelp' | 'photo' | 'photoHelp', string>
+  fields: Record<
+    | 'date' | 'height' | 'heightHelp' | 'note' | 'noteHelp' | 'notePlaceholder'
+    | 'photo' | 'photoHelp' | 'photoAdd' | 'photoAddHint' | 'photoSkip' | 'photoChange' | 'photoRemove',
+    string
+  >
+  announce: Record<'photoAdded' | 'photoRemoved' | 'saved', string>
+  savedText: string
+  newBadge: string
   dashboardIntro: string
   emptyTitle: string
   emptyText: string
