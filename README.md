@@ -62,6 +62,8 @@ npm run lint
 
 Stack: React, TypeScript, Vite, React Router (HashRouter, so refreshes work on GitHub Pages), Dexie (IndexedDB), vite-plugin-pwa (offline), PDFKit (tagged PDF export), and html-to-image (PNG export). Encode Sans is self-hosted through `@fontsource`, so the app makes no font requests and works offline.
 
+**Before committing a change to the Log form, the Dashboard or the PDF export**, run the sample export and veraPDF locally, as described in [By hand with veraPDF](#checking-pdf-accessibility) below. `scripts/pdf-sample.mjs` fills in the real Log form, so a renamed label or message can break it, and CI only finds out after the push.
+
 ### Optional browser checks
 
 `scripts/checks/` has two Playwright scripts for the Planting Log. They are not part of the build or CI, and Playwright is not a project dependency: `npx` downloads the pinned versions into a temporary folder.
@@ -89,7 +91,7 @@ The Dashboard's "Save as PDF" makes a tagged PDF that targets PDF/UA-1. It has r
 
 **Automatic:** `.github/workflows/pdf-ua.yml` runs on every push and pull request. It builds the app, exports a sample PDF with `scripts/pdf-sample.mjs`, and validates it with [veraPDF](https://verapdf.org) using the PDF/UA-1 profile. The sample PDF and the HTML report are saved as the `pdf-ua-sample` artifact on each run.
 
-> **For developers:** a red "PDF/UA check" means the Dashboard's PDF export has an accessibility problem. It does not block the site, which deploys separately. To see what failed, open the run under **Actions → PDF/UA check**, scroll to **Artifacts**, download `pdf-ua-sample`, and open `verapdf-report.html`.
+> **For developers:** a red "PDF/UA check" means the Dashboard's PDF export has an accessibility problem, or that `scripts/pdf-sample.mjs` could not make the sample PDF at all (for example after a Log form change). It does not block the site, which deploys separately. To see what failed, open the run under **Actions → PDF/UA check**. If the "Export a sample PDF" step is red, the script broke: its log shows where. Otherwise scroll to **Artifacts**, download `pdf-ua-sample`, and open `verapdf-report.html`.
 
 **By hand with veraPDF** (needs Java 11 or later):
 
