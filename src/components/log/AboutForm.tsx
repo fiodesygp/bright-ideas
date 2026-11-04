@@ -155,9 +155,9 @@ export default function AboutForm({ mode, learner, onSaved, onCancel, onDelete, 
 
       <div className="btn-row">
         <button type="submit" className={`btn${mode === 'start' ? ' btn-block' : ''}`} disabled={saving}>
-          {mode === 'start' ? about.start : mode === 'add' ? about.add : 'Save changes'}
+          {mode === 'start' ? about.start : mode === 'add' ? about.add : logContent.actions.saveChanges}
         </button>
-        {onCancel && <button type="button" className="btn btn-secondary" onClick={onCancel}>Cancel</button>}
+        {onCancel && <button type="button" className="btn btn-secondary" onClick={onCancel}>{logContent.actions.cancel}</button>}
       </div>
       {mode === 'edit' && learner && onDelete && (
         <div>

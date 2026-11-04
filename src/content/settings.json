@@ -1,0 +1,13 @@
+{
+  "plantNote": "Your name and plant are on the Planting Log. Use Edit there to change them.",
+  "plantLink": "Go to the Planting Log",
+  "removeMine": "Remove my name and log from this device",
+  "removeHelp": "Deletes {name}'s name, entries and photos. Other people's logs on this device stay.",
+  "removeTitle": "Delete {name}'s log?",
+  "removeText": "This deletes {name}'s name and their {count} and photos from this device. Other people's logs stay. You cannot undo this.",
+  "removeConfirm": "Delete",
+  "removed": "{name}'s log was deleted",
+  "clearAllText": "This deletes every name, log entry and photo, and resets your settings. You cannot undo this.",
+  "pdfTip": "Tip: save a PDF first if you want to keep a copy.",
+  "facilitatorSharedDevice": "Each device keeps its own logs. On a shared device, each student adds their name with \"Who's logging?\" on the Planting Log and sees only their own entries."
+}

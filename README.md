@@ -27,12 +27,13 @@ There is no backend, no accounts and no analytics. Names, log entries and photos
 
 ## Editing content (no code changes needed)
 
-All learner-facing text lives in `src/content/`:
+Most learner-facing text lives in `src/content/` (the rest of the Settings page is still in `src/pages/Settings.tsx`):
 
 | File | What it holds |
 |---|---|
 | `home.json` | Driving question and Home links |
-| `log.json` | Log form labels, Dashboard intro, and the empty-state text |
+| `log.json` | Log form labels and checklist, "About my log" and "Who's logging?", announcements, Dashboard intro and counts, PDF labels, and the empty-state text. `{name}`-style slots are filled in by the app |
+| `settings.json` | Settings text about learners: "Remove my name and log", its confirmation, the Clear all data warning, and the shared-device facilitator note |
 | `components.json` | Part cards (with quick checks) and concept cards |
 | `circuits.json` | Circuits: parts, wires, steps, success text, troubleshooting |
 

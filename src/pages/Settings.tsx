@@ -6,11 +6,11 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ExportButtons from '../components/ExportButtons'
 import { CheckIcon } from '../components/Icons'
 import { useAnnounce } from '../components/Announcer'
-import { logContent } from '../content'
+import { settingsContent as text } from '../content'
 import { clearAllData, db, deleteLearner } from '../data/db'
 import { useSettings, type Theme } from '../data/settings'
 import { useLearners } from '../data/useLearners'
-import { fill } from '../lib/labels'
+import { entriesText, fill } from '../lib/labels'
 import './Settings.css'
 
 const THEMES: [Theme, string][] = [
@@ -23,7 +23,6 @@ export default function Settings() {
   const { settings, update, reset } = useSettings()
   const { current } = useLearners()
   const announce = useAnnounce()
-  const { about, announce: say } = logContent
   const [confirming, setConfirming] = useState(false)
   const [removing, setRemoving] = useState(false)
   const [cleared, setCleared] = useState('')
@@ -50,7 +49,7 @@ export default function Settings() {
       <section className="card stack" aria-labelledby="plant-title">
         <h2 id="plant-title">Your plant</h2>
         <p>
-          {about.settingsNote} <Link to="/log">{about.settingsLink}</Link>
+          {text.plantNote} <Link to="/log">{text.plantLink}</Link>
         </p>
         <fieldset className="plain-fieldset">
           <legend className="field-label">Measure plant height in</legend>
@@ -98,10 +97,10 @@ export default function Settings() {
         </p>
         {current && (
           <div className="stack">
-            <p className="field-help" id="remove-help">{fill(about.removeHelp, { name: current.name })}</p>
+            <p className="field-help" id="remove-help">{fill(text.removeHelp, { name: current.name })}</p>
             <div>
               <button type="button" className="btn btn-secondary btn-danger-outline" aria-describedby="remove-help" onClick={() => { setCleared(''); setRemoving(true) }}>
-                {about.removeMine}
+                {text.removeMine}
               </button>
             </div>
           </div>
@@ -122,7 +121,7 @@ export default function Settings() {
       <section className="card stack section" aria-labelledby="facilitator-title">
         <h2 id="facilitator-title">For facilitators</h2>
         <ul className="facilitator-notes">
-          <li>Each device keeps its own logs. On a shared device, each student adds their name with "Who's logging?" on the Planting Log and sees only their own entries.</li>
+          <li>{text.facilitatorSharedDevice}</li>
           <li>After the first visit, the app works offline. Students can add it to their home screen.</li>
           <li>Card, circuit, and prompt text lives in JSON files in <code>src/content</code>. Edit them to change wording.</li>
         </ul>
@@ -140,13 +139,13 @@ export default function Settings() {
           done('All data was cleared.')
         }}
       >
-        <p>This deletes every name, log entry and photo, and resets your settings. You cannot undo this.</p>
-        <p>{about.deleteTip}</p>
+        <p>{text.clearAllText}</p>
+        <p>{text.pdfTip}</p>
       </ConfirmDialog>
       <ConfirmDialog
         open={removing}
-        title={current ? fill(about.deleteTitle, { name: current.name }) : ''}
-        confirmLabel="Delete"
+        title={current ? fill(text.removeTitle, { name: current.name }) : ''}
+        confirmLabel={text.removeConfirm}
         onCancel={() => setRemoving(false)}
         onConfirm={async () => {
           if (!current) return
@@ -154,11 +153,11 @@ export default function Settings() {
           await deleteLearner(id)
           update({ learnerId: undefined })
           setRemoving(false)
-          done(fill(say.learnerDeleted, { name }))
+          done(fill(text.removed, { name }))
         }}
       >
-        <p>{current && fill(about.deleteText, { name: current.name, count: `${myCount ?? 0} ${myCount === 1 ? 'entry' : 'entries'}` })}</p>
-        <p>{about.deleteTip}</p>
+        <p>{current && fill(text.removeText, { name: current.name, count: entriesText(myCount ?? 0) })}</p>
+        <p>{text.pdfTip}</p>
       </ConfirmDialog>
     </div>
   )

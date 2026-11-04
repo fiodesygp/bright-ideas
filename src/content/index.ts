@@ -4,6 +4,7 @@ import homeJson from './home.json'
 import logJson from './log.json'
 import componentsJson from './components.json'
 import circuitsJson from './circuits.json'
+import settingsJson from './settings.json'
 
 export interface HomeContent {
   appName: string
@@ -33,15 +34,26 @@ export interface LogContent {
     | 'title' | 'intro' | 'name' | 'nameHelp' | 'nameError' | 'plant' | 'plantHelp' | 'startDate' | 'startDateError'
     | 'start' | 'editTitle' | 'addTitle' | 'add' | 'logTitle' | 'noName' | 'plantFallback' | 'started' | 'edit'
     | 'switcher' | 'switcherHelp' | 'current' | 'addSomeone' | 'deleteLog' | 'deleteTitle' | 'deleteText' | 'deleteTip'
-    | 'settingsNote' | 'settingsLink' | 'removeMine' | 'removeHelp' | 'pdfName' | 'pdfPlant' | 'pdfStart' | 'pdfChecklist' | 'pdfMissingChars',
+    | 'pdfName' | 'pdfPlant' | 'pdfStart' | 'pdfChecklist' | 'pdfMissingChars',
     string
   >
   savedText: string
   newBadge: string
+  /** Button words shared by the log's forms and dialogs */
+  actions: Record<'saveChanges' | 'cancel' | 'delete', string>
+  /** "1 entry", "3 entries" */
+  count: Record<'entry' | 'entries', string>
   dashboardIntro: string
   emptyTitle: string
   emptyText: string
 }
+
+/** Text on the Settings page. Only the parts about learners live here so far. {name} and {count} are filled in by the app. */
+export type SettingsContent = Record<
+  | 'plantNote' | 'plantLink' | 'removeMine' | 'removeHelp' | 'removeTitle' | 'removeText' | 'removeConfirm' | 'removed'
+  | 'clearAllText' | 'pdfTip' | 'facilitatorSharedDevice',
+  string
+>
 
 export type PartType = 'panel' | 'led' | 'resistor' | 'motor' | 'pump' | 'water' | 'clip'
 
@@ -154,3 +166,4 @@ export const home = homeJson as HomeContent
 export const logContent = logJson as LogContent
 export const learn = componentsJson as ComponentsContent
 export const circuitsContent = circuitsJson as CircuitsContent
+export const settingsContent = settingsJson as SettingsContent

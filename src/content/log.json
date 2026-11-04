@@ -70,14 +70,19 @@
     "deleteTitle": "Delete {name}'s log?",
     "deleteText": "This deletes {name}'s name and their {count} and photos from this device. Other people's logs stay. You cannot undo this.",
     "deleteTip": "Tip: save a PDF first if you want to keep a copy.",
-    "settingsNote": "Your name and plant are on the Planting Log. Use Edit there to change them.",
-    "removeMine": "Remove my name and log from this device",
-    "removeHelp": "Deletes {name}'s name, entries and photos. Other people's logs on this device stay.",
     "pdfName": "My name",
     "pdfPlant": "My plant",
     "pdfStart": "Start date",
     "pdfChecklist": "Checklist",
-    "pdfMissingChars": "Some characters in the name or plant only show in the app.",
-    "settingsLink": "Go to the Planting Log"
+    "pdfMissingChars": "Some characters in the name or plant only show in the app."
+  },
+  "actions": {
+    "saveChanges": "Save changes",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "count": {
+    "entry": "entry",
+    "entries": "entries"
   }
 }

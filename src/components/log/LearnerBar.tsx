@@ -7,7 +7,7 @@ import { logContent } from '../../content'
 import { db, deleteLearner, type Learner } from '../../data/db'
 import { useSettings } from '../../data/settings'
 import { useLearners } from '../../data/useLearners'
-import { fill, learnerDetails, logTitle } from '../../lib/labels'
+import { entriesText, fill, learnerDetails, logTitle } from '../../lib/labels'
 import AboutForm from './AboutForm'
 import './Learner.css'
 
@@ -175,7 +175,7 @@ export default function LearnerBar() {
       <ConfirmDialog
         open={!!deleting}
         title={deleting ? fill(about.deleteTitle, { name: deleting.name }) : ''}
-        confirmLabel="Delete"
+        confirmLabel={logContent.actions.delete}
         onCancel={() => setDeleting(null)}
         onConfirm={async () => {
           if (!deleting) return
@@ -195,8 +195,4 @@ export default function LearnerBar() {
       </ConfirmDialog>
     </section>
   )
-}
-
-function entriesText(n: number) {
-  return `${n} ${n === 1 ? 'entry' : 'entries'}`
 }

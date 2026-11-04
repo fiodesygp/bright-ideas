@@ -37,3 +37,8 @@ export function learnerDetails(learner: Pick<Learner, 'plant' | 'startDate'>) {
 export function ticks(e: Pick<LogEntry, 'soilChecked' | 'watered'>) {
   return { soil: e.soilChecked === true, water: e.watered === true }
 }
+
+/** "1 entry", "3 entries" */
+export function entriesText(n: number) {
+  return `${n} ${n === 1 ? logContent.count.entry : logContent.count.entries}`
+}
