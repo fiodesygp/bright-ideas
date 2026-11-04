@@ -1,6 +1,6 @@
 import { fromCm, type HeightUnit, type LogEntry } from '../data/db'
 import { formatDate, parseISODate, todayISO } from './dates'
-import { fmtNum } from './labels'
+import { fmtNum, ticks } from './labels'
 
 export interface Stat {
   label: string
@@ -45,4 +45,18 @@ export function chartSummary(entries: LogEntry[], unit: HeightUnit) {
 /** Alt text for an entry's photo, built from its date and height. */
 export function photoAlt(e: LogEntry, unit: HeightUnit, plantName: string) {
   return `Photo of ${plantName} on ${formatDate(e.date)}, ${fmtNum(fromCm(e.heightCm, unit))} ${unit} tall.`
+}
+
+/** Checklist counts by day: a day counts once, however many entries it has. */
+export function checklistCounts(entries: LogEntry[]) {
+  const days = new Set<string>()
+  const watered = new Set<string>()
+  const soil = new Set<string>()
+  for (const e of entries) {
+    days.add(e.date)
+    const t = ticks(e)
+    if (t.water) watered.add(e.date)
+    if (t.soil) soil.add(e.date)
+  }
+  return { days: days.size, watered: watered.size, soil: soil.size }
 }

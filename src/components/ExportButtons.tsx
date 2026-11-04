@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import ExportSheet from './ExportSheet'
 import { DownloadIcon } from './Icons'
-import { CURRENT_PLANT_ID, getEntries, type LogEntry } from '../data/db'
+import { CURRENT_PLANT_ID, getEntries, type Learner, type LogEntry } from '../data/db'
 import { useSettings } from '../data/settings'
+import { useLearners } from '../data/useLearners'
 import { todayISO } from '../lib/dates'
 import './ExportButtons.css'
 
@@ -11,22 +12,25 @@ type Format = 'pdf' | 'png'
 
 interface Job {
   format: Format
+  learner: Learner
   entries: LogEntry[]
   photoUrls: Map<number, string>
 }
 
 export default function ExportButtons() {
   const { settings } = useSettings()
+  const { current } = useLearners()
   const [job, setJob] = useState<Job | null>(null)
   const [message, setMessage] = useState('')
   const sheetRef = useRef<HTMLDivElement>(null)
 
   async function start(format: Format) {
+    if (!current) return
     setMessage(format === 'pdf' ? 'Making your PDF…' : 'Making your image…')
-    const entries = await getEntries(CURRENT_PLANT_ID)
+    const entries = await getEntries(CURRENT_PLANT_ID, current.id)
     const photoUrls = new Map<number, string>()
     entries.forEach((e) => e.photo && photoUrls.set(e.id, URL.createObjectURL(e.photo)))
-    setJob({ format, entries, photoUrls })
+    setJob({ format, learner: current, entries, photoUrls })
   }
 
   // The PDF is built from data. The image needs the off-screen sheet in the page first.
@@ -42,7 +46,7 @@ export default function ExportButtons() {
           await exportImage(node!, `${name}.png`)
         } else {
           const { exportPdf } = await import('../lib/exportPdf')
-          await exportPdf({ entries: job.entries, plantName: settings.plantName, unit: settings.heightUnit }, `${name}.pdf`)
+          await exportPdf({ entries: job.entries, learner: job.learner, unit: settings.heightUnit }, `${name}.pdf`)
         }
         if (!cancelled) setMessage(job.format === 'pdf' ? 'Your PDF is ready. Check your downloads.' : 'Your image is ready. Check your downloads.')
       } catch (err) {
@@ -56,15 +60,15 @@ export default function ExportButtons() {
     return () => {
       cancelled = true
     }
-  }, [job, settings.plantName, settings.heightUnit])
+  }, [job, settings.heightUnit])
 
   return (
     <div className="export-buttons">
       <div className="btn-row">
-        <button type="button" className="btn btn-secondary" onClick={() => start('pdf')} disabled={!!job}>
+        <button type="button" className="btn btn-secondary" onClick={() => start('pdf')} disabled={!!job || !current}>
           <DownloadIcon width={20} height={20} /> Save as PDF
         </button>
-        <button type="button" className="btn btn-secondary" onClick={() => start('png')} disabled={!!job}>
+        <button type="button" className="btn btn-secondary" onClick={() => start('png')} disabled={!!job || !current}>
           <DownloadIcon width={20} height={20} /> Save as image
         </button>
       </div>
@@ -72,7 +76,7 @@ export default function ExportButtons() {
       {job?.format === 'png' &&
         createPortal(
           <div className="export-offscreen" aria-hidden="true">
-            <ExportSheet ref={sheetRef} plantName={settings.plantName} unit={settings.heightUnit} entries={job.entries} photoUrls={job.photoUrls} />
+            <ExportSheet ref={sheetRef} learner={job.learner} unit={settings.heightUnit} entries={job.entries} photoUrls={job.photoUrls} />
           </div>,
           document.body,
         )}

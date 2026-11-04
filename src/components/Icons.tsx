@@ -68,3 +68,12 @@ export const CloseIcon = (p: P) => (
 export const WarningIcon = (p: P) => (
   <svg {...base} {...p}><path d="M12 3 2 20h20Z" /><path d="M12 10v4" /><path d="M12 17h.01" /></svg>
 )
+export const SoilIcon = (p: P) => (
+  <svg {...base} {...p}><path d="M10 13V5a2 2 0 0 1 4 0v8" /><path d="M3 20c1.5-3.5 5-5 9-5s7.5 1.5 9 5Z" /><path d="M8 18h.01M16 18h.01M12 18.5h.01" /></svg>
+)
+export const WaterIcon = (p: P) => (
+  <svg {...base} {...p}><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z" /><path d="M9 14.5a3 3 0 0 0 2.5 2.5" /></svg>
+)
+export const UsersIcon = (p: P) => (
+  <svg {...base} {...p}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7" /><path d="M18 14a6.5 6.5 0 0 1 3.5 6" /></svg>
+)

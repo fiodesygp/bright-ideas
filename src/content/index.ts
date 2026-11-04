@@ -22,7 +22,20 @@ export interface LogContent {
     | 'photo' | 'photoHelp' | 'photoAdd' | 'photoAddHint' | 'photoSkip' | 'photoChange' | 'photoRemove',
     string
   >
-  announce: Record<'photoAdded' | 'photoRemoved' | 'saved' | 'changesSaved', string>
+  announce: Record<'photoAdded' | 'photoRemoved' | 'saved' | 'changesSaved' | 'switched' | 'adopted' | 'ready' | 'learnerDeleted', string>
+  /** Booklet step 3. {n} and {m} are filled in by the app. */
+  checklist: Record<
+    'legend' | 'help' | 'soil' | 'soilText' | 'water' | 'waterText' | 'ticked' | 'notTicked' | 'watered' | 'soilChecked',
+    string
+  >
+  /** The "About my log" card, like the booklet cover. {name}, {date} and {count} are filled in by the app. */
+  about: Record<
+    | 'title' | 'intro' | 'name' | 'nameHelp' | 'nameError' | 'plant' | 'plantHelp' | 'startDate' | 'startDateError'
+    | 'start' | 'editTitle' | 'addTitle' | 'add' | 'logTitle' | 'noName' | 'plantFallback' | 'started' | 'edit'
+    | 'switcher' | 'switcherHelp' | 'current' | 'addSomeone' | 'deleteLog' | 'deleteTitle' | 'deleteText' | 'deleteTip'
+    | 'settingsNote' | 'settingsLink' | 'removeMine' | 'removeHelp' | 'pdfName' | 'pdfPlant' | 'pdfStart' | 'pdfChecklist' | 'pdfMissingChars',
+    string
+  >
   savedText: string
   newBadge: string
   dashboardIntro: string

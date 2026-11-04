@@ -8,21 +8,25 @@ import PhotoViewer from '../components/PhotoViewer'
 import Waves from '../components/Waves'
 import HeightChart from '../components/log/HeightChart'
 import EntryCard from '../components/log/EntryCard'
-import { ArrowLeftIcon, LeafIcon } from '../components/Icons'
+import LearnerBar from '../components/log/LearnerBar'
+import { ArrowLeftIcon, LeafIcon, SoilIcon, WaterIcon } from '../components/Icons'
 import { logContent } from '../content'
 import { CURRENT_PLANT_ID, db, getEntries, type HeightUnit, type LogEntry } from '../data/db'
 import { useSettings } from '../data/settings'
+import { useLearners } from '../data/useLearners'
 import { formatDate } from '../lib/dates'
-import { heightText } from '../lib/labels'
-import { chronological, photoAlt, summaryStats } from '../lib/stats'
+import { fill, heightText, plantLabel } from '../lib/labels'
+import { checklistCounts, chronological, photoAlt, summaryStats } from '../lib/stats'
 import { useObjectUrl } from '../lib/useObjectUrl'
 import './Log.css'
 import './Dashboard.css'
 
 export default function Dashboard() {
   const { settings } = useSettings()
-  const { heightUnit: unit, plantName } = settings
-  const entries = useLiveQuery(() => getEntries(CURRENT_PLANT_ID), [])
+  const { heightUnit: unit } = settings
+  const { current } = useLearners()
+  const plantName = plantLabel(current)
+  const entries = useLiveQuery(() => (current ? getEntries(CURRENT_PLANT_ID, current.id) : undefined), [current?.id])
   const [viewing, setViewing] = useState<LogEntry | null>(null)
   const [toDelete, setToDelete] = useState<LogEntry | null>(null)
 
@@ -36,6 +40,8 @@ export default function Dashboard() {
       <Link to="/log" className="back-link">
         <ArrowLeftIcon width={20} height={20} /> Back to Planting Log
       </Link>
+
+      <LearnerBar />
 
       {entries && entries.length === 0 && (
         <section className="empty-state" aria-labelledby="empty-title">
@@ -62,6 +68,7 @@ export default function Dashboard() {
                 </li>
               ))}
             </ul>
+            <ChecklistCounts entries={entries} />
           </section>
 
           <section className="section" aria-labelledby="chart-title">
@@ -141,5 +148,17 @@ function PhotoTile({ entry, unit, plantName, onOpen }: { entry: LogEntry; unit: 
         {entry.note && <span className="photo-note">{entry.note}</span>}
       </figcaption>
     </figure>
+  )
+}
+
+/** "Watered on n of m days". Plain text, no stars or scores. */
+function ChecklistCounts({ entries }: { entries: LogEntry[] }) {
+  const { checklist } = logContent
+  const c = checklistCounts(entries)
+  return (
+    <ul className="checklist-counts" aria-label={checklist.legend}>
+      <li><WaterIcon width={22} height={22} /> {fill(checklist.watered, { n: c.watered, m: c.days })}</li>
+      <li><SoilIcon width={22} height={22} /> {fill(checklist.soilChecked, { n: c.soil, m: c.days })}</li>
+    </ul>
   )
 }

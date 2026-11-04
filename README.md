@@ -9,13 +9,13 @@ A companion web app for the **miniAgriPV kit**. 7th graders build a mini agrivol
   - iPhone or iPad (Safari): tap **Share**, then **Add to Home Screen**.
   - Android (Chrome): tap the **⋮** menu, then **Add to Home screen** (or **Install app**).
   - After that, it opens like an app and works without internet.
-- **Privacy:** all data stays on the device. Log entries and photos are saved in the browser on that phone or tablet. Nothing is sent anywhere, and there are no accounts or tracking. Each device keeps its own log, so students on shared devices should save a PDF from their Dashboard before someone else uses it. **Settings → Clear all data** erases everything on that device.
+- **Privacy:** all data stays on the device. Log entries and photos are saved in the browser on that phone or tablet. Nothing is sent anywhere, and there are no accounts or tracking. Students on a shared device each add their name (first name or nickname) with **Who's logging?** on the Planting Log, and each sees only their own entries, Dashboard and PDF. **Settings → Remove my name and log from this device** deletes one student's name and entries; **Settings → Clear all data** erases everything on that device.
 - **Before your first session:** check the kit facts in [FACILITATOR-CHECKLIST.md](FACILITATOR-CHECKLIST.md) against your real parts. Start with the first item: whether one panel can run the whole system.
 
 ## Features
 
-1. **Planting Log**: a four-field entry form (date, height, notes, and an optional photo) plus a list of recent entries.
-2. **My Dashboard**: summary cards, a height-over-time chart, a photo timeline, and the full entry list with edit and delete. Export it as a tagged, text-based PDF (PDF/UA) or as a PNG image.
+1. **Planting Log**: an "About my log" card like the booklet cover (name, plant, start date), then an entry form (optional photo, date, height, the booklet's Soil and Water checklist, and notes) plus a list of recent entries. Several students can share a device with **Who's logging?**.
+2. **My Dashboard**: summary cards, checklist counts ("Watered on 3 of 5 days"), a height-over-time chart, a photo timeline, and the full entry list with edit and delete. Export it as a tagged, text-based PDF (PDF/UA) or as a PNG image.
 3. **Learn the Components**: flip cards for each kit part and four big-idea cards, plus a quick-check question on each part card (with a hint and retry, no score).
 4. **Connect the Components**: six step-by-step circuits, with one diagram and one instruction per step, then "Did it work?" and a troubleshooting checklist.
 
@@ -23,7 +23,7 @@ Kit-specific facts (polarity, wire colors, resistor value, panel power) must be 
 
 ## Privacy
 
-There is no backend, no accounts and no analytics. Log entries and photos are stored in the browser's IndexedDB, and settings are kept in localStorage. **Settings → Clear all data** removes everything.
+There is no backend, no accounts and no analytics. Names, log entries and photos are stored in the browser's IndexedDB, and settings (including who is logging now) are kept in localStorage. Each entry stores the learner's id, not their name, so renaming updates everywhere. Entries saved before names existed go to the first learner added on that device. **Settings → Remove my name and log from this device** deletes the current learner and only their entries; **Settings → Clear all data** removes everything.
 
 ## Editing content (no code changes needed)
 
@@ -69,7 +69,8 @@ Stack: React, TypeScript, Vite, React Router (HashRouter, so refreshes work on G
 `scripts/checks/` has two Playwright scripts for the Planting Log. They are not part of the build or CI, and Playwright is not a project dependency: `npx` downloads the pinned versions into a temporary folder.
 
 - `logform.mjs` checks the Log form at 360, 768 and 1280 px in light and dark mode, with and without a photo, and with old entries already saved. It covers field order, the "Photo added", "Photo removed" and "Saved" announcements, focus, axe (WCAG 2.2 AA), 44 px targets, sideways scrolling, and reduced motion.
-- `edit.mjs` checks editing an entry on the Dashboard: field order, Remove photo, the "Changes saved" announcement, and focus returning to the Edit button.
+- `edit.mjs` checks editing an entry on the Dashboard: field order, checklist ticks, Remove photo, the "Changes saved" announcement, and focus returning to the Edit button.
+- `learners.mjs` checks "About my log" and shared devices at the same sizes and themes: a fresh device, two learners with their own entries, switching ("Switched to …'s log"), renaming, the Dashboard checklist counts, deleting a learner, Settings → Remove my name and log, and old entries going to the first learner.
 
 With the dev server running (`npm run dev`), in a second terminal:
 
@@ -77,9 +78,10 @@ With the dev server running (`npm run dev`), in a second terminal:
 npx -y playwright@1.64.1 install chromium   # once, downloads the browser
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/logform.mjs
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/edit.mjs
+npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/learners.mjs
 ```
 
-Each script prints PASS or FAIL per check and ends with `ALL PASSED` or the number that failed, and exits non-zero on any failure. To test another server, pass its URL, for example `… node scripts/checks/logform.mjs http://localhost:4173/bright-ideas/`. `logform.mjs` saves screenshots to `bright-ideas-checks` in your system temp folder; set `SHOTS_DIR` to put them somewhere else. Don't commit them. `scripts/checks/shots/` is git-ignored if you want them next to the scripts.
+Each script prints PASS or FAIL per check and ends with `ALL PASSED` or the number that failed, and exits non-zero on any failure. To test another server, pass its URL, for example `… node scripts/checks/logform.mjs http://localhost:4173/bright-ideas/`. `logform.mjs` and `learners.mjs` save screenshots to `bright-ideas-checks` in your system temp folder; set `SHOTS_DIR` to put them somewhere else. Don't commit them. `scripts/checks/shots/` is git-ignored if you want them next to the scripts.
 
 ## Design tokens
 

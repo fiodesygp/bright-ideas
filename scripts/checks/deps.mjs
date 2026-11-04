@@ -49,3 +49,13 @@ export async function makePhoto(page) {
   })
   return { name: 'plant.jpg', mimeType: 'image/jpeg', buffer: Buffer.from(b64, 'base64') }
 }
+
+/** Fills in the "About my log" card when it shows (a fresh device), so the Log form appears. */
+export async function startLog(page, name = 'Maya', plant = 'Basil') {
+  await page.locator('.learner-bar, form.about-form').first().waitFor()
+  if (!(await page.locator('form.about-form').count())) return
+  await page.getByLabel('My name').fill(name)
+  await page.getByLabel(/^My plant/).fill(plant)
+  await page.getByRole('button', { name: 'Start my log' }).click()
+  await page.locator('.learner-bar').waitFor()
+}

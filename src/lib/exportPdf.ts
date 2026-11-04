@@ -6,15 +6,16 @@ import { toBlob } from 'pdfkit/output'
 import { create as openFont, type Font } from 'fontkit'
 import regularUrl from '@fontsource/encode-sans/files/encode-sans-latin-400-normal.woff?url'
 import boldUrl from '@fontsource/encode-sans/files/encode-sans-latin-700-normal.woff?url'
-import { fromCm, type HeightUnit, type LogEntry } from '../data/db'
+import { fromCm, type HeightUnit, type Learner, type LogEntry } from '../data/db'
+import { logContent } from '../content'
 import { formatDate, parseISODate, todayISO } from './dates'
 import { download } from './exportImage'
-import { fmtNum, heightText } from './labels'
+import { fill, fmtNum, heightText, ticks } from './labels'
 import { chartSummary, chronological, photoAlt, summaryStats } from './stats'
 
 interface Input {
   entries: LogEntry[]
-  plantName: string
+  learner: Learner
   unit: HeightUnit
 }
 
@@ -59,12 +60,15 @@ function makeTextFilter(fonts: Font[]) {
   }
 }
 
-export async function exportPdf({ entries, plantName: rawPlantName, unit }: Input, filename: string) {
+export async function exportPdf({ entries, learner, unit }: Input, filename: string) {
   const [regular, bold] = await Promise.all([regularUrl, boldUrl].map((u) => fetch(u).then((r) => r.arrayBuffer())))
   const pdfText = makeTextFilter([regular, bold].map((b) => openFont(new Uint8Array(b) as unknown as Buffer) as Font))
   const safe = (text: string) => pdfText(text).text
-  const plantName = safe(rawPlantName) || 'My plant'
-  const title = `Planting Log: ${plantName}`
+  const { about, checklist } = logContent
+  const name = pdfText(learner.name)
+  const plant = pdfText(learner.plant)
+  const plantName = plant.text || about.plantFallback
+  const title = name.text ? fill(about.logTitle, { name: name.text }) : about.noName
 
   const doc = new PDFDocument({
     size: 'A4',
@@ -117,6 +121,14 @@ export async function exportPdf({ entries, plantName: rawPlantName, unit }: Inpu
   doc.y = M
 
   heading('H1', title, 24, GREEN)
+  // Like the booklet cover: My name · My plant · Start date.
+  const cover = [
+    `${about.pdfName}: ${name.text || '-'}`,
+    `${about.pdfPlant}: ${plantName}`,
+    learner.startDate && `${about.pdfStart}: ${formatDate(learner.startDate)}`,
+  ]
+  para(cover.filter(Boolean).join('  ·  '), 12.5)
+  if (name.dropped || plant.dropped) para(about.pdfMissingChars, 9.5, INK_2)
   para(`Made with Bright Ideas on ${formatDate(todayISO())}.`, 11, INK_2)
 
   if (entries.length === 0) {
@@ -157,12 +169,16 @@ export async function exportPdf({ entries, plantName: rawPlantName, unit }: Inpu
     const photo = e.photo ? await e.photo.arrayBuffer() : null
     const photoW = 120
     const photoH = 90
+    // Checklist column on the right, like the booklet table.
+    const colW = 112
+    const colX = M + W - colW
     const textX = photo ? M + photoW + 14 : M
-    const textW = W - (textX - M)
+    const textW = colX - 14 - textX
     const note = pdfText(e.note)
     doc.font('Body').fontSize(11)
     const noteH = (note.text ? doc.heightOfString(note.text, { width: textW }) : 0) + (note.dropped ? 16 : 0)
-    ensureSpace(Math.max(photo ? photoH : 0, 22 + noteH) + 22)
+    const colH = 50
+    ensureSpace(Math.max(photo ? photoH : 0, 22 + noteH, colH) + 22)
 
     const y0 = doc.y
     doc.markContent('Artifact', { type: 'Layout' })
@@ -179,10 +195,39 @@ export async function exportPdf({ entries, plantName: rawPlantName, unit }: Inpu
       root.add(doc.struct('P', {}, () => doc.font('Body').fontSize(9.5).fillColor(INK_2).text(MISSING_CHARS_NOTE, textX, doc.y + 2, { width: textW })))
     }
     const textBottom = doc.y
+    const colBottom = drawChecklist(e, colX, y, colW)
     if (photo) {
       root.add(doc.struct('Figure', { alt: photoAlt(e, unit, plantName) }, () => doc.image(photo, M, y, { fit: [photoW, photoH] })))
     }
-    doc.y = Math.max(textBottom, photo ? y + photoH : 0) + 12
+    doc.y = Math.max(textBottom, colBottom, photo ? y + photoH : 0) + 12
+  }
+
+  /**
+   * "Checklist / Soil: ticked / Water: not ticked". The boxes are drawn as
+   * artifacts, outside the tagged text, so the words carry the meaning.
+   */
+  function drawChecklist(e: LogEntry, x: number, y: number, w: number) {
+    const t = ticks(e)
+    const rows: [string, boolean][] = [[checklist.soil, t.soil], [checklist.water, t.water]]
+    const lineH = 15
+    const firstRow = y + 16
+    doc.markContent('Artifact', { type: 'Layout' })
+    rows.forEach(([, on], i) => {
+      const bx = x
+      const by = firstRow + i * lineH + 1
+      doc.rect(bx, by, 9, 9).lineWidth(1).strokeColor(INK_2).stroke()
+      if (on) doc.moveTo(bx + 1.8, by + 4.8).lineTo(bx + 3.9, by + 7).lineTo(bx + 7.6, by + 2).lineWidth(1.6).strokeColor(GREEN).stroke()
+    })
+    doc.endMarkedContent()
+    root.add(
+      doc.struct('P', {}, () => {
+        doc.font('Bold').fontSize(9.5).fillColor(INK_2).text(about.pdfChecklist, x, y, { width: w })
+        rows.forEach(([label, on], i) =>
+          doc.font('Body').fontSize(10).fillColor(INK).text(`${label}: ${on ? checklist.ticked : checklist.notTicked}`, x + 14, firstRow + i * lineH, { width: w - 14 }),
+        )
+      }),
+    )
+    return firstRow + rows.length * lineH
   }
 
   root.end()

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { HeightUnit, LogEntry } from '../../data/db'
 import { formatDate } from '../../lib/dates'
-import { heightText } from '../../lib/labels'
+import { heightText, ticks } from '../../lib/labels'
 import { photoAlt } from '../../lib/stats'
 import { useObjectUrl } from '../../lib/useObjectUrl'
 import { logContent } from '../../content'
@@ -30,6 +30,8 @@ export default function EntryCard({ entry, unit, plantName, editable, onDelete, 
     requestAnimationFrame(() => editBtnRef.current?.focus())
   }
   const when = formatDate(entry.date)
+  const ticked = ticks(entry)
+  const { checklist } = logContent
 
   return (
     <article className={`entry${fresh ? ' entry-fresh' : ''}${photoUrl ? ' has-photo' : ''}`} aria-labelledby={`entry-${entry.id}`}>
@@ -43,6 +45,12 @@ export default function EntryCard({ entry, unit, plantName, editable, onDelete, 
         <div className="entry-text">
           <h3 id={`entry-${entry.id}`}>{formatDate(entry.date, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</h3>
           <p className="entry-height"><span className="visually-hidden">Height: </span>{heightText(entry, unit)}</p>
+          {(ticked.soil || ticked.water) && (
+            <ul className="entry-ticks" aria-label={checklist.legend}>
+              {ticked.soil && <TickChip label={checklist.soil} />}
+              {ticked.water && <TickChip label={checklist.water} />}
+            </ul>
+          )}
           {entry.note && <p className="entry-note">{entry.note}</p>}
         </div>
         {photoUrl &&
@@ -70,5 +78,15 @@ export default function EntryCard({ entry, unit, plantName, editable, onDelete, 
       )}
       {editing && <LogForm entry={entry} onDone={stopEditing} />}
     </article>
+  )
+}
+
+/** "Soil ✓". Screen readers hear "Soil ticked". */
+function TickChip({ label }: { label: string }) {
+  return (
+    <li className="entry-tick">
+      {label} <span aria-hidden="true">✓</span>
+      <span className="visually-hidden"> {logContent.checklist.ticked}</span>
+    </li>
   )
 }

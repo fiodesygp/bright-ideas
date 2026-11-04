@@ -86,3 +86,7 @@
 }
 .empty-state-text { position: relative; z-index: 1; display: grid; justify-items: center; gap: 4px; }
 .empty-icon { width: 44px; height: 44px; color: var(--primary); }
+
+.checklist-counts { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 6px; font-weight: 600; }
+.checklist-counts li { display: flex; align-items: center; gap: 8px; }
+.checklist-counts svg { flex: none; color: var(--primary); }

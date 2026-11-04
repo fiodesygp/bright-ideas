@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import './ConfirmDialog.css'
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
 /** Native <dialog>: traps focus, closes on Esc, and returns focus when closed. */
 export default function ConfirmDialog({ open, title, children, confirmLabel, onConfirm, onCancel }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
+  // A page can have more than one dialog (Dashboard: entry and learner), so ids must be unique.
+  const titleId = useId()
 
   useEffect(() => {
     const d = ref.current
@@ -22,8 +24,8 @@ export default function ConfirmDialog({ open, title, children, confirmLabel, onC
   }, [open])
 
   return (
-    <dialog ref={ref} className="confirm-dialog" aria-labelledby="confirm-title" onCancel={onCancel} onClose={onCancel}>
-      <h2 id="confirm-title">{title}</h2>
+    <dialog ref={ref} className="confirm-dialog" aria-labelledby={titleId} onCancel={onCancel} onClose={onCancel}>
+      <h2 id={titleId}>{title}</h2>
       <div>{children}</div>
       <div className="btn-row">
         <button type="button" className="btn btn-secondary" onClick={onCancel} autoFocus>Cancel</button>

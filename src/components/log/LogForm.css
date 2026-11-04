@@ -106,3 +106,16 @@
 .saved-callout svg { color: var(--primary); }
 
 .counter { margin: 4px 0 0; text-align: right; }
+
+/* Checklist (booklet step 3): two big tick boxes. */
+.checklist .field-help { margin: -2px 0 10px; }
+.checklist-options { display: grid; gap: 10px; }
+@media (min-width: 560px) {
+  .checklist-options { grid-template-columns: 1fr 1fr; }
+}
+.check-toggle { min-height: 56px; padding-block: 10px; font-weight: 400; }
+.check-toggle:has(input:checked) { padding-block: 9px; font-weight: 400; }
+.check-toggle .chip-mark { width: 26px; height: 26px; border-radius: 6px; }
+.check-toggle:has(input:checked) .chip-mark { background-size: 20px; }
+.check-icon { flex: none; color: var(--primary); }
+.check-text { line-height: 1.3; }

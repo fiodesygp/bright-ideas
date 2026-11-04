@@ -84,3 +84,14 @@ button.entry-thumb { cursor: zoom-in; }
 
 .see-all { margin-top: 12px; }
 .see-all a { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); font-weight: 600; }
+
+.entry-ticks { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.entry-tick {
+  padding: 1px 10px;
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+}

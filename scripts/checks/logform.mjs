@@ -1,12 +1,13 @@
 // Checks the Planting Log form at 360/768/1280 px in light and dark mode, with
-// and without a photo, with old entries already saved: field order, the
+// and without a photo, with old entries already saved (they go to the first
+// learner): field order, the checklist, the
 // announcements, focus, axe, 44px targets, sideways scrolling and reduced motion.
 // It saves screenshots to SHOTS_DIR (outside the repo by default) for a look.
 //
 // usage: see README, "Optional browser checks"
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
-import { APP_URL as BASE, AxeBuilder, SHOTS_DIR, chromium, makePhoto } from './deps.mjs'
+import { APP_URL as BASE, AxeBuilder, SHOTS_DIR, chromium, makePhoto, startLog } from './deps.mjs'
 
 const SHOTS = SHOTS_DIR + path.sep
 mkdirSync(SHOTS, { recursive: true })
@@ -43,7 +44,7 @@ async function axe(page, label) {
 
 async function checkLayout(page, label) {
   const { sw, cw, small } = await page.evaluate(() => {
-    const els = [...document.querySelectorAll('main a, main button, main input:not(.visually-hidden), main textarea, main label.btn, main .photo-drop')]
+    const els = [...document.querySelectorAll('main a, main button, main input:not(.visually-hidden):not(.check-toggle input), main .check-toggle, main textarea, main label.btn, main .photo-drop')]
     const small = els.filter((e) => { const r = e.getBoundingClientRect(); return r.width && (r.height < 44 || r.width < 44) }).map((e) => `${e.tagName}.${e.className} ${Math.round(e.getBoundingClientRect().width)}x${Math.round(e.getBoundingClientRect().height)}`)
     return { sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, small }
   })
@@ -63,13 +64,19 @@ for (const scheme of ['light', 'dark']) {
     await page.waitForSelector('.log-form')
     await seedOld(page)
     await page.reload()
+    // Old entries go to the first learner created.
+    await startLog(page)
     await page.waitForSelector('.entry')
     const PHOTO = await makePhoto(page)
 
     // Field order: photo first, then date, height, notes, save.
     const order = await page.$$eval('.log-form .field-label, .log-form button[type=submit]', (els) => els.map((e) => e.textContent.trim().split(' ')[0]))
-    ok(order.join(',') === 'Photo,Date,Plant,What,Save', `${tag} order ${order.join(' > ')}`)
+    ok(order.join(',') === 'Photo,Date,Plant,Checklist,What,Save', `${tag} order ${order.join(' > ')}`)
     ok((await page.locator('.entry').count()) === 2, `${tag} old entries show (2 cards)`)
+    ok((await page.locator('.learner-notice').innerText()).includes("Your earlier entries were added to Maya's log"), `${tag} says old entries went to Maya`)
+    // The newer old entry has no checklist fields: no ticks. The first app's "Did you water?" yes shows as Water.
+    ok((await page.locator('.entry').first().locator('.entry-tick').count()) === 0, `${tag} old entry without checklist fields shows no ticks`)
+    ok((await page.locator('.entry').nth(1).locator('.entry-tick').allTextContents()).join() === 'Water ✓ ticked', `${tag} first-version entry with watered: true shows Water ✓`)
     ok((await page.locator('.entry').first().innerText()).includes('5.1 cm') && !(await page.locator('.entry').first().locator('.entry-note').count()), `${tag} old entry with no note shows its height (2 in saved, 5.1 cm shown)`)
     await page.screenshot({ path: `${SHOTS}${tag}-1-empty.png`, fullPage: true })
     await axe(page, `${tag} empty form + old entries`)
@@ -102,11 +109,17 @@ for (const scheme of ['light', 'dark']) {
     const ph = await page.getByLabel(/What happened/).getAttribute('placeholder')
     ok(ph === 'I noticed…', `${tag} story placeholder "${ph}"`)
     await page.getByLabel(/What happened/).fill('I noticed two new leaves. Next I want to try more sun.')
+    const soilBox = page.getByRole('checkbox', { name: 'Soil — I checked the soil is moist' })
+    ok(!(await soilBox.isChecked()) && !(await page.getByRole('checkbox', { name: 'Water — I watered my plant' }).isChecked()), `${tag} checklist starts unticked`)
+    const box = await page.locator('.check-toggle').first().boundingBox()
+    ok(box.height >= 44, `${tag} checklist tile is ${Math.round(box.height)}px tall`)
+    await soilBox.check()
     await page.getByRole('button', { name: 'Save entry' }).click()
     ok(await waitLive(page, 'Saved to your Planting Log!'), `${tag} announces "Saved to your Planting Log!"`)
     await page.waitForSelector('.entry-fresh')
     ok(await page.locator('.entry-fresh').getByText('Just saved').isVisible(), `${tag} new card shows "Just saved"`)
     ok((await page.locator('.entry-fresh img').count()) === 1, `${tag} new card has its photo`)
+    ok((await page.locator('.entry-fresh .entry-tick').allTextContents()).join() === 'Soil ✓ ticked', `${tag} new card shows only "Soil ✓"`)
     await page.waitForTimeout(600)
     await page.screenshot({ path: `${SHOTS}${tag}-3-saved.png`, fullPage: true })
     await axe(page, `${tag} after save`)
@@ -127,6 +140,7 @@ for (const scheme of ['light', 'dark']) {
 const ctx = await browser.newContext({ viewport: { width: 360, height: 900 }, reducedMotion: 'reduce' })
 const page = await ctx.newPage()
 await page.goto(BASE + '#/log')
+await startLog(page)
 await page.getByLabel(/Plant height/).fill('4')
 await page.getByRole('button', { name: 'Save entry' }).click()
 await page.waitForSelector('.entry-fresh')
@@ -136,6 +150,7 @@ ok(await page.getByText('Saved to your Planting Log!').first().isVisible(), 'red
 const ctx2 = await browser.newContext({ viewport: { width: 360, height: 900 } })
 const p2 = await ctx2.newPage()
 await p2.goto(BASE + '#/log')
+await startLog(p2)
 await p2.getByLabel(/Plant height/).fill('4')
 await p2.getByRole('button', { name: 'Save entry' }).click()
 await p2.waitForSelector('.entry-fresh')
@@ -151,6 +166,21 @@ await p2.keyboard.press('Tab')
 ok(await p2.evaluate(() => document.activeElement?.textContent.includes('No photo today')), 'keyboard: next is No photo today')
 await p2.keyboard.press('Enter')
 ok(await p2.evaluate(() => document.activeElement?.type === 'date'), 'keyboard: Enter on it moves to Date')
+// The rest of the form: height, the cm/in link, the two ticks, notes, Save.
+// Chromium stops on the date's month, day and year, so repeats are merged.
+const stops = []
+while (stops.at(-1) !== 'submit' && stops.length < 12) {
+  await p2.keyboard.press('Tab')
+  const stop = await p2.evaluate(() => {
+    const el = document.activeElement
+    return el?.type === 'checkbox' ? el.closest('label').querySelector('strong').textContent : el?.type || el?.tagName.toLowerCase()
+  })
+  if (stop !== stops.at(-1)) stops.push(stop)
+}
+ok(stops.join(' > ') === 'date > number > a > Soil > Water > textarea > submit', `keyboard: then ${stops.join(' > ')}`)
+await p2.getByRole('checkbox', { name: /^Soil/ }).focus()
+await p2.keyboard.press('Space')
+ok(await p2.getByRole('checkbox', { name: /^Soil/ }).isChecked(), 'keyboard: Space ticks Soil')
 await browser.close()
 console.log(fails ? `${fails} FAILED` : 'ALL PASSED')
 process.exitCode = fails ? 1 : 0

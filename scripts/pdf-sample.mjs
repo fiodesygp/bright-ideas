@@ -1,6 +1,7 @@
 // Makes a sample Dashboard PDF for accessibility checks (veraPDF in CI, or PAC by hand).
-// It adds four log entries through the app's own UI, including notes with emoji
-// and non-Latin text, then clicks "Save as PDF".
+// It fills in the "About my log" card, adds four log entries through the app's
+// own UI (notes with emoji and non-Latin text, some checklist ticks), then
+// clicks "Save as PDF".
 //
 // usage: node scripts/pdf-sample.mjs <app-url> <out.pdf>
 //   e.g. node scripts/pdf-sample.mjs http://localhost:4173/bright-ideas/ sample.pdf
@@ -16,12 +17,14 @@ if (!appUrl || !out) {
 }
 const photo = fileURLToPath(new URL('../public/icon-512.png', import.meta.url))
 // Read the "saved" message from the app's content, so rewording it doesn't break this script.
-const savedMessage = JSON.parse(readFileSync(new URL('../src/content/log.json', import.meta.url), 'utf8')).announce.saved
+const log = JSON.parse(readFileSync(new URL('../src/content/log.json', import.meta.url), 'utf8'))
+const savedMessage = log.announce.saved
+// date, height, note, photo, soil checked, watered
 const entries = [
-  ['2026-10-07', '2.5', 'Two tiny leaves today.', true],
-  ['2026-10-14', '4', 'Grew fast 🌱! My abuela said 很好. Soil stays damp.', true],
-  ['2026-10-21', '5.5', '🌵🌵', false],
-  ['2026-10-27', '7.5', 'The leaves look bigger on the shady side.', true],
+  ['2026-10-07', '2.5', 'Two tiny leaves today.', true, true, true],
+  ['2026-10-14', '4', 'Grew fast 🌱! My abuela said 很好. Soil stays damp.', true, true, false],
+  ['2026-10-21', '5.5', '🌵🌵', false, false, false],
+  ['2026-10-27', '7.5', 'The leaves look bigger on the shady side.', true, false, true],
 ]
 
 const browser = await chromium.launch()
@@ -31,10 +34,19 @@ page.on('pageerror', (e) => errors.push(e.message))
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
 
 await page.goto(new URL('#/log', appUrl).href)
-for (const [date, height, note, withPhoto] of entries) {
+// "About my log", like the booklet cover.
+await page.getByLabel(log.about.name).fill('Maya')
+await page.getByLabel(log.about.plant).fill('Basil')
+await page.getByLabel(log.about.startDate).fill('2026-10-01')
+await page.getByRole('button', { name: log.about.start }).click()
+await page.locator('.learner-bar').waitFor()
+
+for (const [date, height, note, withPhoto, soil, water] of entries) {
   await page.fill('input[type=date]', date)
   await page.fill('input[inputmode=decimal]', height)
   await page.fill('textarea', note)
+  await page.getByRole('checkbox', { name: new RegExp(`^${log.checklist.soil} `) }).setChecked(soil)
+  await page.getByRole('checkbox', { name: new RegExp(`^${log.checklist.water} `) }).setChecked(water)
   if (withPhoto) {
     await page.setInputFiles('input[type=file]', photo)
     await page.locator('.photo-preview img').waitFor()

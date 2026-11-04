@@ -4,14 +4,17 @@ import type { HeightUnit } from './db'
 export type Theme = 'system' | 'light' | 'dark'
 
 export interface Settings {
-  plantName: string
   heightUnit: HeightUnit
   theme: Theme
+  /** The learner using the app right now (see the learners table). */
+  learnerId?: number
+  /** Plant name from before learners existed. Only prefills the first "About my log" card. */
+  plantName?: string
 }
 
 // index.html reads this key too, to set the theme before the first paint.
 const KEY = 'bright-ideas:settings'
-const DEFAULTS: Settings = { plantName: 'My plant', heightUnit: 'cm', theme: 'system' }
+const DEFAULTS: Settings = { heightUnit: 'cm', theme: 'system' }
 
 /** "system" removes the attribute so the CSS follows prefers-color-scheme. */
 function applyTheme(theme: Theme) {

@@ -1,16 +1,17 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import { AlertIcon, ArrowRightIcon, CameraIcon, LeafIcon, TrashIcon } from '../Icons'
+import { AlertIcon, ArrowRightIcon, CameraIcon, LeafIcon, SoilIcon, TrashIcon, WaterIcon } from '../Icons'
 import { useAnnounce } from '../Announcer'
 import Waves from '../Waves'
 import { logContent } from '../../content'
 import { CURRENT_PLANT_ID, db, fromCm, toCm, type LogEntry } from '../../data/db'
 import { useSettings } from '../../data/settings'
 import { todayISO } from '../../lib/dates'
-import { fmtNum } from '../../lib/labels'
+import { fmtNum, ticks } from '../../lib/labels'
 import { resizePhoto } from '../../lib/photo'
 import { useObjectUrl } from '../../lib/useObjectUrl'
 import SunSprout from './SunSprout'
+import '../chips.css'
 import './LogForm.css'
 
 const NOTE_MAX = 280
@@ -21,27 +22,40 @@ interface FormState {
   height: string
   note: string
   photo: Blob | null
+  soilChecked: boolean
+  watered: boolean
 }
 
 type Errors = Partial<Record<'date' | 'height' | 'photo', string>>
 
-const { fields, announce: say } = logContent
+const { fields, announce: say, checklist } = logContent
+
+const EMPTY = (date: string): FormState => ({ date, height: '', note: '', photo: null, soilChecked: false, watered: false })
 
 interface Props {
   /** When set, the form edits this entry instead of adding a new one. */
   entry?: LogEntry
+  /** Who new entries belong to. Edits keep the entry's own learner. */
+  learnerId?: number
   onDone?: () => void
   /** Called with the new entry's id after a new entry is saved. */
   onSaved?: (id: number) => void
 }
 
-export default function LogForm({ entry, onDone, onSaved }: Props) {
+export default function LogForm({ entry, learnerId, onDone, onSaved }: Props) {
   const { settings } = useSettings()
   const unit = settings.heightUnit
   const [form, setForm] = useState<FormState>(() =>
     entry
-      ? { date: entry.date, height: fmtNum(fromCm(entry.heightCm, unit)), note: entry.note, photo: entry.photo ?? null }
-      : { date: todayISO(), height: '', note: '', photo: null },
+      ? {
+          date: entry.date,
+          height: fmtNum(fromCm(entry.heightCm, unit)),
+          note: entry.note,
+          photo: entry.photo ?? null,
+          soilChecked: ticks(entry).soil,
+          watered: ticks(entry).water,
+        }
+      : EMPTY(todayISO()),
   )
   const [errors, setErrors] = useState<Errors>({})
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
@@ -127,6 +141,8 @@ export default function LogForm({ entry, onDone, onSaved }: Props) {
       heightCm: toCm(height, unit),
       note: form.note.trim(),
       photo: form.photo ?? undefined,
+      soilChecked: form.soilChecked,
+      watered: form.watered,
     }
     if (entry) {
       await db.entries.update(entry.id, { ...data, updatedAt: Date.now() })
@@ -134,8 +150,8 @@ export default function LogForm({ entry, onDone, onSaved }: Props) {
       onDone?.()
       return
     }
-    const newId = await db.entries.add({ ...data, plantId: CURRENT_PLANT_ID, createdAt: Date.now() })
-    setForm({ date: form.date, height: '', note: '', photo: null })
+    const newId = await db.entries.add({ ...data, plantId: CURRENT_PLANT_ID, learnerId, createdAt: Date.now() })
+    setForm(EMPTY(form.date))
     setStatus('saved')
     announce(say.saved)
     onSaved?.(newId)
@@ -274,6 +290,15 @@ export default function LogForm({ entry, onDone, onSaved }: Props) {
         </div>
       </div>
 
+      <fieldset className="choice-group checklist" aria-describedby={fieldId('checklist-help')}>
+        <legend className="field-label">{checklist.legend}</legend>
+        <p className="field-help" id={fieldId('checklist-help')}>{checklist.help}</p>
+        <div className="checklist-options">
+          <CheckToggle Icon={SoilIcon} label={checklist.soil} text={checklist.soilText} checked={form.soilChecked} onChange={(v) => set('soilChecked', v)} />
+          <CheckToggle Icon={WaterIcon} label={checklist.water} text={checklist.waterText} checked={form.watered} onChange={(v) => set('watered', v)} />
+        </div>
+      </fieldset>
+
       <div className="field">
         <label className="field-label" htmlFor={fieldId('note')}>{fields.note}</label>
         <p className="field-help" id={fieldId('note-help')}>{fields.noteHelp}</p>
@@ -307,7 +332,27 @@ export default function LogForm({ entry, onDone, onSaved }: Props) {
   )
 }
 
-function Req() {
+interface CheckToggleProps {
+  Icon: typeof SoilIcon
+  label: string
+  text: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}
+
+/** A real checkbox in a large tile, like a tick box in the booklet. */
+function CheckToggle({ Icon, label, text, checked, onChange }: CheckToggleProps) {
+  return (
+    <label className="chip check-toggle">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span className="chip-mark" aria-hidden="true" />
+      <Icon className="check-icon" width={26} height={26} />
+      <span className="check-text"><strong>{label}</strong> — {text}</span>
+    </label>
+  )
+}
+
+export function Req() {
   return (
     <>
       <span className="req" aria-hidden="true">*</span>

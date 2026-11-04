@@ -3,10 +3,11 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import PageHeading from '../components/PageHeading'
 import Waves from '../components/Waves'
 import { ArrowRightIcon, BookIcon, ChartIcon, LeafIcon, PlugIcon } from '../components/Icons'
-import { home } from '../content'
+import { home, logContent } from '../content'
 import { CURRENT_PLANT_ID, getEntries } from '../data/db'
-import { useSettings } from '../data/settings'
+import { useLearners } from '../data/useLearners'
 import { daysAgo, formatDate } from '../lib/dates'
+import { logTitle } from '../lib/labels'
 import './Home.css'
 
 const SECTION_ICONS: Record<string, typeof LeafIcon> = {
@@ -17,8 +18,8 @@ const SECTION_ICONS: Record<string, typeof LeafIcon> = {
 }
 
 export default function Home() {
-  const { settings } = useSettings()
-  const entries = useLiveQuery(() => getEntries(CURRENT_PLANT_ID), [])
+  const { learners, current } = useLearners()
+  const entries = useLiveQuery(() => (current ? getEntries(CURRENT_PLANT_ID, current.id) : []), [current?.id])
   const latest = entries?.[0]
 
   return (
@@ -58,9 +59,9 @@ export default function Home() {
         </ul>
       </section>
 
-      {entries && (
+      {learners && entries && (
         <section className="section card" aria-labelledby="status-label">
-          <h2 id="status-label">{settings.plantName}</h2>
+          <h2 id="status-label">{current ? logTitle(current) : logContent.about.noName}</h2>
           {latest ? (
             <p>
               Last check: {formatDate(latest.date)} ({daysAgo(latest.date)}).{' '}

@@ -16,6 +16,7 @@
 .export-sheet h1 { font-size: 28px; margin-bottom: 4px; color: #2e7d3e; }
 .export-sheet h2 { font-size: 18px; margin: 22px 0 8px; }
 .export-sheet h3 { font-size: 16px; margin: 0 0 4px; }
+.export-cover { margin: 0 0 4px; font-size: 16px; }
 .export-meta { color: #4a524d; }
 .export-stats {
   display: grid;
@@ -34,4 +35,5 @@
   padding: 12px 0;
 }
 .export-entry p { margin: 4px 0; }
+.export-entry .export-ticks { font-size: 13px; color: #4a524d; }
 .export-entry img { width: 140px; height: 105px; object-fit: cover; border-radius: 8px; flex: none; }

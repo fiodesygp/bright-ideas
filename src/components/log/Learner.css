@@ -1,0 +1,27 @@
+/* "Maya's Planting Log · Basil · started Nov 4", like the booklet cover. */
+.learner-bar {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 20px;
+  border-top: 5px solid var(--brand-lime);
+}
+.learner-bar > h2 { margin: 0; font-size: 1.3rem; line-height: 1.25; overflow-wrap: anywhere; }
+.learner-details { margin: -8px 0 0; color: var(--ink-2); font-weight: 600; overflow-wrap: anywhere; }
+.learner-notice { margin: 0; }
+.learner-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.learner-panel { display: grid; gap: 10px; border-top: 2px solid var(--line); padding-top: 14px; }
+.learner-panel[hidden] { display: none; }
+.learner-panel > h3 { margin: 0; }
+.learner-panel > .field-help { margin: -4px 0 0; }
+.learner-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.learner-pick { justify-content: flex-start; overflow-wrap: anywhere; text-align: left; }
+.learner-pick.is-current { background: var(--primary-soft); }
+.learner-current { font-weight: 400; color: var(--ink-2); }
+.learner-add { justify-self: start; margin-left: -12px; }
+.learner-panel .about-form.is-editing { border-top: 0; padding-top: 0; margin-top: 0; }
+
+.about-form.card { margin: 4px 0 20px; }
+.about-delete { color: var(--error); margin-left: -12px; }
