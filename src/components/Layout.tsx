@@ -11,19 +11,20 @@ const TABS = [
 ]
 
 export default function Layout() {
-  const { pathname } = useLocation()
-  const firstRender = useRef(true)
+  const { pathname, hash } = useLocation()
+  const lastPath = useRef(pathname)
 
   // On navigation, start at the top and move focus to the new page heading
-  // so screen reader and keyboard users know the page changed.
+  // so screen reader and keyboard users know the page changed. A link to a
+  // section (e.g. #/learn#how-to-connect) is left to the page, which moves there.
   useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false
-      return
-    }
+    // Not on the first visit, and not when only the section changes.
+    if (lastPath.current === pathname) return
+    lastPath.current = pathname
+    if (hash) return
     window.scrollTo(0, 0)
     document.querySelector<HTMLElement>('main h1')?.focus()
-  }, [pathname])
+  }, [pathname, hash])
 
   return (
     <>
