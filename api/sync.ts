@@ -8,6 +8,7 @@
 // Env (Vercel → Settings → Environment Variables):
 //   SUPABASE_URL               https://<project>.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY  the secret key (sb_secret_…)
+//   SYNC_RATE_LIMIT_PER_MINUTE optional, requests per IP per minute (default 60)
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 const BUCKET = 'log-photos'
@@ -197,6 +198,28 @@ async function savePhoto(url: URL, bytes: Uint8Array) {
   )
 }
 
+/* ---------- Rate limit ---------- */
+
+// A fixed one-minute window per client IP, kept in this function instance's
+// memory. Dependency-free, but best effort: Vercel may run several instances
+// (each counts on its own) and a cold start resets the counts. It stops one
+// client hammering the endpoint; it is not a hard global cap.
+const RATE_WINDOW_MS = 60_000
+const hits = new Map<string, { count: number; resetAt: number }>()
+
+/** Seconds the caller must wait, or 0 if the request may go ahead. */
+function rateLimit(request: Request) {
+  const limit = Number(process.env.SYNC_RATE_LIMIT_PER_MINUTE ?? 60)
+  // Vercel sets these from the connection; clients can't override them there.
+  const ip = request.headers.get('x-real-ip') ?? request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+  const now = Date.now()
+  if (hits.size > 10_000) for (const [key, h] of hits) if (h.resetAt <= now) hits.delete(key)
+  let h = hits.get(ip)
+  if (!h || h.resetAt <= now) hits.set(ip, (h = { count: 0, resetAt: now + RATE_WINDOW_MS }))
+  h.count++
+  return h.count > limit ? Math.ceil((h.resetAt - now) / 1000) : 0
+}
+
 /* ---------- HTTP ---------- */
 
 /**
@@ -224,6 +247,7 @@ function cors(request: Request): Record<string, string> {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
+    'Access-Control-Expose-Headers': 'Retry-After',
     Vary: 'Origin',
   }
 }
@@ -239,6 +263,13 @@ export function OPTIONS(request: Request) {
 export async function POST(request: Request) {
   const site = siteOf(request)
   if (!site) return reply(request, 403, { error: 'origin not allowed' })
+  const wait = rateLimit(request)
+  if (wait) {
+    return Response.json(
+      { error: 'too many requests' },
+      { status: 429, headers: { ...cors(request), 'Cache-Control': 'no-store', 'Retry-After': String(wait) } },
+    )
+  }
   const type = (request.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase()
   const declared = Number(request.headers.get('content-length') ?? 0)
   try {

@@ -2,7 +2,8 @@
 // backfill of data saved by the previous version, the device id, offline save
 // then upload on reconnect, edit re-upload (photo only when it changed),
 // entry and learner deletes, Clear all data, the status line and its
-// announcements, axe, and the endpoint's checks on what it accepts.
+// announcements, axe, the endpoint's checks on what it accepts, and the
+// rate limit (429 with Retry-After; the client waits and retries).
 //
 // The app must be built to post to the local endpoint and served on port 5173:
 //   VITE_SYNC_URL=http://localhost:5180/api/sync npm run build
@@ -32,6 +33,11 @@ async function axe(page, label) {
   ok(r.violations.length === 0, `axe ${label}: ${r.violations.map((v) => `${v.id} (${v.nodes.map((n) => n.target).join(', ')})`).join('; ') || '0 violations'}`)
 }
 
+// The handler runs in this process and reads its rate limit per request.
+// The browser has no client IP header here, so all its uploads share one
+// bucket: keep the limit out of the way except where it is being tested.
+const setLimit = (n) => { process.env.SYNC_RATE_LIMIT_PER_MINUTE = String(n) }
+setLimit(10_000)
 const stop = await startServers()
 const browser = await chromium.launch()
 
@@ -62,6 +68,18 @@ const browser = await chromium.launch()
   ok(ghp.headers.get('access-control-allow-origin') === 'https://fiodesygp.github.io', 'endpoint: GitHub Pages origin allowed')
   ok((await fetch(API_URL, { method: 'OPTIONS', headers: { Origin: 'https://evil.example' } })).status === 403, 'endpoint: preflight from another origin → 403')
   ok(rows('entries', dev).length === 0 && store.photos.size === 0, 'endpoint: nothing refused was stored')
+
+  // Rate limit: per IP, 429 with Retry-After once over the limit.
+  setLimit(3)
+  const asIp = (ip) => post(base, { ...O, 'X-Real-IP': ip })
+  const firstThree = await Promise.all([1, 2, 3].map(() => asIp('203.0.113.9')))
+  ok(firstThree.every((r) => r.status === 200), 'rate limit: first 3 requests in a minute → 200')
+  const over = await asIp('203.0.113.9')
+  const after = Number(over.headers.get('retry-after'))
+  ok(over.status === 429 && after > 0 && after <= 60, `rate limit: 4th → 429, Retry-After ${after} s`)
+  ok(over.headers.get('access-control-allow-origin') === O.Origin && /retry-after/i.test(over.headers.get('access-control-expose-headers') ?? ''), 'rate limit: 429 carries CORS and exposes Retry-After')
+  ok((await asIp('198.51.100.7')).status === 200, 'rate limit: another IP is not affected')
+  setLimit(10_000)
 }
 
 /* ---------- Backfill: data saved by the previous version (Dexie v2) ---------- */
@@ -168,6 +186,28 @@ ok(true, 'endpoint down: status "1 waiting to upload"')
 await page.unroute('**/api/sync**')
 await page.evaluate(() => window.dispatchEvent(new Event('online')))
 ok(await until(() => rows('entries', deviceId).some((e) => Number(e.height) === 6.5)), 'endpoint back: queued entry uploaded')
+
+// Rate limited: the entry waits as asked and goes up on the next try.
+const warnings = []
+page.on('console', (m) => m.type() === 'warning' && warnings.push(m.text()))
+setLimit(0)
+await page.getByLabel(/Plant height/).fill('6.8')
+await page.getByRole('button', { name: 'Save entry' }).click()
+await page.waitForFunction(() => document.querySelector('.sync-status')?.textContent.trim() === '1 waiting to upload')
+ok(await until(() => warnings.some((w) => /trying again in (\d+) s/.test(w))), 'rate limited: client schedules a retry')
+const retryIn = Number(warnings.find((w) => /trying again in/.test(w))?.match(/in (\d+) s/)[1])
+ok(retryIn > 5, `rate limited: waits as the server asked (${retryIn} s, not the 5 s first backoff)`)
+ok(!rows('entries', deviceId).some((e) => Number(e.height) === 6.8), 'rate limited: nothing stored')
+const queued = await page.evaluate(() => new Promise((res) => {
+  const q = indexedDB.open('bright-ideas')
+  q.onsuccess = () => { const g = q.result.transaction('entries').objectStore('entries').getAll(); g.onsuccess = () => { res(g.result.find((e) => e.height === 6.8)); q.result.close() } }
+}))
+ok(queued?.dirty === 1 && !queued.syncedAt, 'rate limited: entry stays queued, not dropped')
+setLimit(10_000)
+await page.evaluate(() => window.dispatchEvent(new Event('online')))
+ok(await until(() => rows('entries', deviceId).some((e) => Number(e.height) === 6.8)), 'rate limit lifted: queued entry uploaded')
+await page.waitForFunction(() => document.querySelector('.sync-status')?.textContent.trim() === 'All entries uploaded', null, { timeout: 5000 }).catch(() => {})
+ok((await status(page)) === 'All entries uploaded', 'rate limit lifted: status back to "All entries uploaded"')
 
 /* ---------- Edit re-upload ---------- */
 await page.goto(BASE + '#/log/dashboard')

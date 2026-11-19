@@ -16,11 +16,20 @@ const DEBOUNCE_MS = 1500
 const FIRST_RETRY_MS = 5_000
 const MAX_RETRY_MS = 5 * 60_000
 
+/** A failed request. `retryAfterMs` is set when the server said how long to wait (429). */
+class SyncError extends Error {
+  retryAfterMs = 0
+}
+
 async function send(url: string, init: RequestInit) {
   // Same-origin credentials: on a protected Vercel preview the request needs
   // Vercel's own cookie; nothing is ever sent cross-origin with cookies.
   const res = await fetch(url, { ...init, mode: 'cors', credentials: 'same-origin', cache: 'no-store' })
-  if (!res.ok) throw new Error(`Sync request failed: ${res.status} ${await res.text().catch(() => '')}`)
+  if (res.ok) return
+  const err = new SyncError(`Sync request failed: ${res.status} ${await res.text().catch(() => '')}`)
+  // Too many requests is not a problem with the data: wait as asked, then try again.
+  if (res.status === 429) err.retryAfterMs = (Number(res.headers.get('Retry-After')) || 0) * 1000
+  throw err
 }
 
 const postJson = (body: unknown) =>
@@ -128,7 +137,9 @@ async function run() {
   } catch (err) {
     failures++
     again = false
-    const wait = Math.min(MAX_RETRY_MS, FIRST_RETRY_MS * 2 ** (failures - 1))
+    const backoff = FIRST_RETRY_MS * 2 ** (failures - 1)
+    const asked = err instanceof SyncError ? err.retryAfterMs : 0
+    const wait = Math.min(MAX_RETRY_MS, Math.max(backoff, asked))
     console.warn(`Upload failed; trying again in ${Math.round(wait / 1000)} s.`, err)
     scheduleSync(wait)
   } finally {
