@@ -7,6 +7,7 @@
     "skipLibCheck": true,
     "module": "nodenext",
     "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
     "moduleDetection": "force",
     "noEmit": true,
     "strict": true,

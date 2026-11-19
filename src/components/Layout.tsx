@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
-import { BookIcon, GearIcon, HomeIcon, LeafIcon, PlugIcon } from './Icons'
+import { BookIcon, GearIcon, HomeIcon, LeafIcon, SunIcon } from './Icons'
 
 const TABS = [
   { to: '/', label: 'Home', Icon: HomeIcon, end: true },
   { to: '/log', label: 'Log', Icon: LeafIcon, end: false },
   { to: '/learn', label: 'Learn', Icon: BookIcon, end: false },
-  { to: '/connect', label: 'Connect', Icon: PlugIcon, end: false },
+  { to: '/simulation', label: 'Simulation', Icon: SunIcon, end: false },
   { to: '/settings', label: 'Settings', Icon: GearIcon, end: false },
 ]
 

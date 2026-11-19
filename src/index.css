@@ -34,7 +34,7 @@
   --tip-soft: #fff6d6;
   --tip-border: #8a6a00;
 
-  /* Circuit diagrams always sit on light "paper" so red/black wires match the real kit. */
+  /* Part drawings (Learn cards) always sit on light "paper" so red/black wires match the real kit. */
   --paper: #ffffff;
   --paper-ink: #111111;
   --wire-red: #c62828;
@@ -229,7 +229,7 @@ textarea {
 }
 .tabbar ul {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   max-width: var(--max);
   margin: 0 auto;
   padding: 0;
@@ -260,6 +260,10 @@ textarea {
 }
 .tabbar a:focus-visible {
   outline-offset: -4px;
+}
+/* Below 360 px, "Simulation" needs a slightly smaller label to keep clear of its neighbours. */
+@media (max-width: 359px) {
+  .tabbar a { font-size: 0.75rem; }
 }
 
 /* ---------- Buttons ---------- */

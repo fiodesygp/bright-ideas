@@ -24,7 +24,7 @@ export default defineConfig({
       manifest: {
         name: 'Bright Ideas',
         short_name: 'Bright Ideas',
-        description: 'A companion tool for the miniAgriPV kit: log your plant, learn the parts, and build circuits.',
+        description: 'A companion tool for the miniAgriPV kit: log your plant, learn the parts, and test panel designs in a simulation.',
         lang: 'en',
         theme_color: '#2e7d3e',
         background_color: '#ffffff',

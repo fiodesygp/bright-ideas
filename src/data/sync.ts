@@ -1,8 +1,8 @@
-// Uploads learners, entries and photos to the project team's database through
+// Uploads learners, entries, photos and Sun Day runs to the project team's database through
 // the sync endpoint (api/sync.ts). The app stays local-first: everything is
 // saved on the device first, and this runs in the background. Nothing here
 // blocks a save; a failed upload stays queued and is tried again later.
-import { currentEditTick, db, editedSince, onLocalChange, type Learner, type LogEntry } from './db'
+import { currentEditTick, db, editedSince, onLocalChange, type Learner, type LogEntry, type SunDayRun, type SyncTable } from './db'
 import { getDeviceId } from './device'
 
 /** The Vercel deployment's endpoint. GitHub Pages builds set VITE_SYNC_URL to it. */
@@ -65,8 +65,32 @@ const entryOut = (e: LogEntry) => ({
   updatedAt: e.updatedAt ?? null,
 })
 
+// Only the design choices; nothing a learner types.
+const runOut = (r: SunDayRun) => ({
+  localId: r.id,
+  learnerId: r.learnerId,
+  createdAt: r.createdAt,
+  design: {
+    crop: r.design.crop,
+    weather: r.design.weather,
+    days: r.design.days,
+    panels: r.design.panels,
+    height: r.design.height,
+    fan: r.design.fan,
+    pump: r.design.pump,
+  },
+  challenge: r.challenge,
+  guess: r.guess,
+  why: r.why,
+  actual: r.actual,
+  score: r.score,
+  fullSun: r.fullSun,
+  food: r.food,
+  energy: r.energy,
+})
+
 /** Clears the dirty mark once the server has the record, unless it was edited meanwhile. */
-async function markSynced(table: 'learners' | 'entries', records: (Learner | LogEntry)[], tick: number) {
+async function markSynced(table: SyncTable, records: (Learner | LogEntry | SunDayRun)[], tick: number) {
   const t = db.table(table)
   await db.transaction('rw', t, async () => {
     for (const r of records) {
@@ -79,7 +103,7 @@ async function markSynced(table: 'learners' | 'entries', records: (Learner | Log
   })
 }
 
-/** Learners first, then each changed photo, then entries, then deletions. */
+/** Learners first, then each changed photo, then entries, then Sun Day runs, then deletions. */
 async function pushAll() {
   const deviceId = await getDeviceId()
   const about = { deviceId, appVersion: __APP_VERSION__ }
@@ -103,6 +127,13 @@ async function pushAll() {
   for (const part of chunks(entries, BATCH)) {
     await postJson({ ...about, entries: part.map(entryOut) })
     await markSynced('entries', part, tick)
+  }
+
+  tick = currentEditTick()
+  const runs = await db.sunDayRuns.where('dirty').equals(1).toArray()
+  for (const part of chunks(runs, BATCH)) {
+    await postJson({ ...about, sunDayRuns: part.map(runOut) })
+    await markSynced('sunDayRuns', part, tick)
   }
 
   const stones = await db.tombstones.toArray()

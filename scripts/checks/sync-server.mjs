@@ -15,7 +15,7 @@ export const API_PORT = 5180
 export const API_URL = `http://localhost:${API_PORT}/api/sync`
 
 /** What the fake Supabase holds: rows by table, photos by path, and a log of uploads. */
-export const store = { devices: new Map(), learners: new Map(), entries: new Map(), photos: new Map(), uploads: [], unknown: [] }
+export const store = { devices: new Map(), learners: new Map(), entries: new Map(), sun_day_runs: new Map(), photos: new Map(), uploads: [], unknown: [] }
 
 const rowKey = (table, row) => (table === 'devices' ? row.device_id : `${row.device_id}/${row.local_id}`)
 

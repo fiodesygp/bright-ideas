@@ -1,7 +1,7 @@
 // Vercel Function (Node runtime): receives uploads from the app and writes
 // them to Supabase with the secret key, which never reaches the browser.
 //
-//   POST application/json  { deviceId, appVersion, learners?, entries?, deletes? }
+//   POST application/json  { deviceId, appVersion, learners?, entries?, sunDayRuns?, deletes? }
 //   POST image/jpeg        ?device=<uuid>&entry=<local id>   (one photo per request)
 //   OPTIONS                CORS preflight
 //
@@ -10,6 +10,8 @@
 //   SUPABASE_SERVICE_ROLE_KEY  the secret key (sb_secret_…)
 //   SYNC_RATE_LIMIT_PER_MINUTE optional, requests per IP per minute (default 60)
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+// The Sun Day model: the only plants, weather, panels and challenges a run can name.
+import model from '../src/sim/model.json' with { type: 'json' }
 
 const BUCKET = 'log-photos'
 const MAX_JSON_BYTES = 1_000_000
@@ -67,6 +69,18 @@ function boolOrNull(v: unknown, what: string) {
   if (v !== null && typeof v !== 'boolean') throw new BadRequest(`${what} must be true, false or null`)
   return v
 }
+function oneOf<T>(v: unknown, what: string, allowed: readonly T[]) {
+  if (!allowed.includes(v as T)) throw new BadRequest(`${what} must be one of: ${allowed.join(', ')}`)
+  return v as T
+}
+function bool(v: unknown, what: string) {
+  if (typeof v !== 'boolean') throw new BadRequest(`${what} must be true or false`)
+  return v
+}
+function intIn(v: unknown, what: string, min: number, max: number) {
+  if (!Number.isSafeInteger(v) || (v as number) < min || (v as number) > max) throw new BadRequest(`${what} must be a whole number from ${min} to ${max}`)
+  return v as number
+}
 function list(v: unknown, what: string, max: number) {
   if (v === undefined) return []
   if (!Array.isArray(v) || v.length > max) throw new BadRequest(`${what} must be a list of at most ${max}`)
@@ -75,8 +89,23 @@ function list(v: unknown, what: string, max: number) {
 
 const photoPath = (deviceId: string, entryId: number) => `${deviceId}/${entryId}.jpg`
 
+// What a Sun Day run may hold, from model.json. Height is low or high only:
+// "mid" stays in model.json for tuning but is not a choice in the app.
+const SUN_DAY = {
+  crops: Object.keys(model.crops),
+  weather: Object.keys(model.weather),
+  days: [1, 7],
+  panels: ['none', ...Object.keys(model.panels)],
+  heights: ['low', 'high'],
+  challenges: Object.keys(model.challenges),
+  guesses: ['more', 'same', 'less'],
+  reasons: ['shade', 'light', 'fan', 'pump'],
+}
+const DELETE_TABLES = { learners: 'learners', entries: 'entries', sunDayRuns: 'sun_day_runs' } as const
+type DeleteTable = keyof typeof DELETE_TABLES
+
 function parseBatch(body: unknown) {
-  const b = obj(body, 'body', ['deviceId', 'appVersion', 'learners', 'entries', 'deletes'], ['deviceId', 'appVersion'])
+  const b = obj(body, 'body', ['deviceId', 'appVersion', 'learners', 'entries', 'sunDayRuns', 'deletes'], ['deviceId', 'appVersion'])
   const deviceId = str(b.deviceId, 'deviceId', 36)
   if (!UUID.test(deviceId)) throw new BadRequest('deviceId must be a UUID')
   const appVersion = str(b.appVersion, 'appVersion', 40)
@@ -122,13 +151,46 @@ function parseBatch(body: unknown) {
     }
   })
 
-  const deletes = list(b.deletes, 'deletes', MAX_DELETES).map((v, i) => {
-    const d = obj(v, `deletes[${i}]`, ['table', 'localId'])
-    if (d.table !== 'learners' && d.table !== 'entries') throw new BadRequest('table must be learners or entries')
-    return { table: d.table as 'learners' | 'entries', localId: int(d.localId, 'localId') }
+  // Sun Day runs hold only design choices and scores: nothing a learner types.
+  const sunDayRuns = list(b.sunDayRuns, 'sunDayRuns', MAX_RECORDS).map((v, i) => {
+    const what = `sunDayRuns[${i}]`
+    const r = obj(v, what, [
+      'localId', 'learnerId', 'createdAt', 'design', 'challenge', 'guess', 'why', 'actual', 'score', 'fullSun', 'food', 'energy',
+    ])
+    const d = obj(r.design, `${what}.design`, ['crop', 'weather', 'days', 'panels', 'height', 'fan', 'pump'])
+    const createdAt = time(r.createdAt, 'createdAt')
+    return {
+      device_id: deviceId,
+      local_id: int(r.localId, 'localId'),
+      learner_local_id: int(r.learnerId, 'learnerId'),
+      crop: oneOf(d.crop, 'crop', SUN_DAY.crops),
+      weather: oneOf(d.weather, 'weather', SUN_DAY.weather),
+      days: oneOf(d.days, 'days', SUN_DAY.days),
+      panels: oneOf(d.panels, 'panels', SUN_DAY.panels),
+      height: oneOf(d.height, 'height', SUN_DAY.heights),
+      fan: bool(d.fan, 'fan'),
+      pump: bool(d.pump, 'pump'),
+      challenge: r.challenge === null ? null : oneOf(r.challenge, 'challenge', SUN_DAY.challenges),
+      guess: r.guess === null ? null : oneOf(r.guess, 'guess', SUN_DAY.guesses),
+      why: r.why === null ? null : oneOf(r.why, 'why', SUN_DAY.reasons),
+      actual: oneOf(r.actual, 'actual', SUN_DAY.guesses),
+      score: intIn(r.score, 'score', 0, 200),
+      full_sun: intIn(r.fullSun, 'fullSun', 0, 100),
+      food: intIn(r.food, 'food', 0, 100),
+      energy: intIn(r.energy, 'energy', 0, 100),
+      created_at: createdAt,
+      updated_at: new Date().toISOString(),
+      deleted_at: null,
+    }
   })
 
-  return { deviceId, appVersion, learners, entries, deletes }
+  const deletes = list(b.deletes, 'deletes', MAX_DELETES).map((v, i) => {
+    const d = obj(v, `deletes[${i}]`, ['table', 'localId'])
+    const table = oneOf(d.table, 'table', Object.keys(DELETE_TABLES) as DeleteTable[])
+    return { table, localId: int(d.localId, 'localId') }
+  })
+
+  return { deviceId, appVersion, learners, entries, sunDayRuns, deletes }
 }
 
 /* ---------- Writing to Supabase ---------- */
@@ -161,11 +223,12 @@ async function saveBatch(batch: ReturnType<typeof parseBatch>, origin: string) {
     const gone = batch.entries.filter((e) => !e.photo_path).map((e) => photoPath(deviceId, e.local_id))
     if (gone.length) check(await db.storage.from(BUCKET).remove(gone), 'remove photos')
   }
+  if (batch.sunDayRuns.length) check(await db.from('sun_day_runs').upsert(batch.sunDayRuns), 'sun_day_runs')
 
   // Soft deletes: keep the row with deleted_at for the record, but blank the
   // personal text and delete the photo, as the app promises.
   const now = new Date().toISOString()
-  const ids = (table: string) => batch.deletes.filter((d) => d.table === table).map((d) => d.localId)
+  const ids = (table: DeleteTable) => batch.deletes.filter((d) => d.table === table).map((d) => d.localId)
   const learnerIds = ids('learners')
   const entryIds = ids('entries')
   if (learnerIds.length) {
@@ -180,6 +243,11 @@ async function saveBatch(batch: ReturnType<typeof parseBatch>, origin: string) {
       'delete entries',
     )
     check(await db.storage.from(BUCKET).remove(entryIds.map((id) => photoPath(deviceId, id))), 'remove photos')
+  }
+  // Runs hold no personal text, so marking them deleted is enough.
+  const runIds = ids('sunDayRuns')
+  if (runIds.length) {
+    check(await db.from('sun_day_runs').update({ deleted_at: now }).eq('device_id', deviceId).in('local_id', runIds), 'delete sun_day_runs')
   }
 }
 

@@ -20,9 +20,9 @@
       "text": "Flip cards to learn what each part does and how to connect it."
     },
     {
-      "to": "/connect",
-      "title": "Connect the Components",
-      "text": "Build circuits one step at a time."
+      "to": "/simulation",
+      "title": "Simulation",
+      "text": "Design a panel setup, predict, and run a sunny day."
     }
   ],
   "subtitle": "Your helper for the miniAgriPV kit."

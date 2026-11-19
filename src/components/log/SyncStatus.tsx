@@ -23,12 +23,13 @@ const subscribeOnline = (cb: () => void) => {
 export default function SyncStatus() {
   const online = useSyncExternalStore(subscribeOnline, () => navigator.onLine)
   const waiting = useLiveQuery(async () => {
-    const [l, e, t] = await Promise.all([
+    const counts = await Promise.all([
       db.learners.where('dirty').equals(1).count(),
       db.entries.where('dirty').equals(1).count(),
+      db.sunDayRuns.where('dirty').equals(1).count(),
       db.tombstones.count(),
     ])
-    return l + e + t
+    return counts.reduce((a, n) => a + n, 0)
   }, [])
   const announce = useAnnounce()
   const kind = waiting === undefined ? undefined : waiting === 0 ? 'done' : online ? 'waiting' : 'offline'

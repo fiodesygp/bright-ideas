@@ -14,10 +14,10 @@ The upload sync is live. Students' devices hold data that hasn't been uploaded y
 
 ## Before pushing
 
-1. `npm run lint` and `npm run build` pass.
+1. `npm run lint`, `npm run build` and `npm test` pass.
 2. Run every check in `scripts/checks/` (see README, "Optional browser checks"):
    - `logform.mjs`, `edit.mjs` and `learners.mjs`, against a normal build.
-   - `sync.mjs`, against a build made with `VITE_SYNC_URL=http://localhost:5180/api/sync` and served on port 5173.
+   - `sync.mjs` and `sunday.mjs`, against a build made with `VITE_SYNC_URL=http://localhost:5180/api/sync` and served on port 5173.
 3. **If the change touches the Log form, the Dashboard or the PDF export**, also run the PDF check:
    - That means `src/components/log/*`, `src/pages/Log*`, `src/pages/Dashboard*`, `src/lib/exportPdf.ts` or `src/content/log.json`.
    - Run `node scripts/pdf-sample.mjs http://localhost:4173/bright-ideas/ sample.pdf`, then `verapdf --flavour ua1 sample.pdf`, and report the rule and check counts.
