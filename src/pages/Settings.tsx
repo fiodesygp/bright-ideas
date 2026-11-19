@@ -120,7 +120,7 @@ export default function Settings() {
         <ul className="facilitator-notes">
           <li>{text.facilitatorSharedDevice}</li>
           <li>After the first visit, the app works offline. Students can add it to their home screen.</li>
-          <li>Card, circuit, and prompt text lives in JSON files in <code>src/content</code>. Edit them to change wording.</li>
+          <li>Card, simulation and prompt text lives in JSON files in <code>src/content</code>. Edit them to change wording.</li>
         </ul>
       </section>
 

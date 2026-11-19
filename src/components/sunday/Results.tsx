@@ -5,13 +5,17 @@ import { passesChallenge, type ChallengeId } from '../../sim/challenges.ts'
 import { compareToFullSun, pickRule } from '../../sim/feedback.ts'
 import type { Design, Score, SimResult } from '../../sim/types.ts'
 import type { Pred } from './Prediction'
+import SaveHint from './SaveHint'
 
 export type Run = { r: SimResult; s: Score; design: Design; pred: Pred; challenge: ChallengeId | null }
 
 const pct = (x: number) => Math.round(x * 100)
 
-/** Sun Score, the prediction against what happened, why, and a three-step hint ladder. */
-const Results = forwardRef<HTMLHeadingElement, { run: Run }>(function Results({ run }, ref) {
+/**
+ * Sun Score, the prediction against what happened, why, and a three-step hint
+ * ladder. `saved` is false when nobody is logging, so the run was not saved.
+ */
+const Results = forwardRef<HTMLHeadingElement, { run: Run; saved: boolean }>(function Results({ run, saved }, ref) {
   const { r, s, design: d, pred, challenge } = run
   const id = useId()
   const [hints, setHints] = useState(0)
@@ -43,6 +47,7 @@ const Results = forwardRef<HTMLHeadingElement, { run: Run }>(function Results({ 
         {challenge && <span className={`sd-badge${passed ? ' is-pass' : ''}`}>{passed ? res.passed : res.notYet}</span>}
       </p>
       <p className="field-help">{fill(res.ref, { fs })}</p>
+      {!saved && <SaveHint />}
 
       <div className="sd-bars">
         <div className="sd-bar">

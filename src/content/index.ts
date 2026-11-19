@@ -3,7 +3,6 @@
 import homeJson from './home.json'
 import logJson from './log.json'
 import componentsJson from './components.json'
-import circuitsJson from './circuits.json'
 import settingsJson from './settings.json'
 import sundayJson from './sunday.json'
 
@@ -97,82 +96,13 @@ export interface ComponentsContent {
   concepts: ConceptCard[]
 }
 
-export interface DiagramPart {
-  id: string
-  type: PartType
-  x: number
-  y: number
-  label: string
-  /** Degrees, multiples of 90. Use -90 to lay a resistor flat with end "a" on the left. */
-  rotate?: number
-  /** Move the part's label if it bumps into something */
-  labelSide?: 'above' | 'below' | 'left' | 'right'
-}
-
-export interface DiagramWire {
-  id: string
-  /** "partId.terminal", e.g. "panel.pos" or "led.anode" */
-  from: string
-  to: string
-  side: '+' | '-'
-  via?: [number, number][]
-}
-
-export interface CircuitStep {
-  text: string
-  /** "safety" shows the step as a warning */
-  kind?: 'safety'
-  wire?: string
-  highlightParts?: string[]
-  /** Optional override for the auto-generated diagram description. */
-  alt?: string
-}
-
-export interface CircuitDiagramData {
-  height: number
-  /** Visible area left edge and width (defaults 30 and 300) */
-  viewX?: number
-  viewWidth?: number
-  parts: DiagramPart[]
-  wires: DiagramWire[]
-}
-
-/** A different setup to try when the main circuit does not work, shown under troubleshooting. */
-export interface CircuitFallback {
-  title: string
-  text: string
-  parts: string[]
-  steps: string[]
-  diagram: CircuitDiagramData
-}
-
-export interface Circuit {
-  id: string
-  number: number
-  title: string
-  summary: string
-  status: 'ready' | 'coming-soon'
-  parts: string[]
-  diagram?: CircuitDiagramData
-  steps?: CircuitStep[]
-  success?: string
-  troubleshooting?: string[]
-  fallback?: CircuitFallback
-}
-
-export interface CircuitsContent {
-  intro: string
-  circuits: Circuit[]
-}
-
 export const home = homeJson as HomeContent
 export const logContent = logJson as LogContent
 export const learn = componentsJson as ComponentsContent
-export const circuitsContent = circuitsJson as CircuitsContent
 export const settingsContent = settingsJson as SettingsContent
 
 /**
- * Text on the Sun Day page. The type follows sunday.json itself, so a key the
+ * Text on the Simulation page. The type follows sunday.json itself, so a key the
  * app reads can't go missing. {name}-style slots are filled in by the app.
  */
 export type SunDayContent = typeof sundayJson

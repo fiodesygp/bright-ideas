@@ -68,7 +68,7 @@
     "addSomeone": "Add someone",
     "deleteLog": "Delete {name}'s log",
     "deleteTitle": "Delete {name}'s log?",
-    "deleteText": "This deletes {name}'s name, their {count} and photos, and their Sun Day runs from this device. It also removes the name, notes and photos from the project team's copy, and marks the runs as deleted there. Other people's logs stay. You cannot undo this.",
+    "deleteText": "This deletes {name}'s name, their {count} and photos, and their simulation runs from this device. It also removes the name, notes and photos from the project team's copy, and marks the runs as deleted there. Other people's logs stay. You cannot undo this.",
     "deleteTip": "Tip: save a PDF first if you want to keep a copy.",
     "pdfName": "My name",
     "pdfPlant": "My plant",

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { PageHeader } from '../components/PageHeading'
 import { useAnnounce } from '../components/Announcer'
-import LearnerBar from '../components/log/LearnerBar'
 import Scene from '../components/sunday/Scene'
 import Controls from '../components/sunday/Controls'
 import Gauges from '../components/sunday/Gauges'
@@ -61,18 +60,13 @@ export default function SunDay() {
         <p className="page-intro">{text.lede}</p>
         <p className="sd-estimates">{text.estimates}</p>
       </PageHeader>
-      {learners && !current && (
-        <>
-          <p>{text.needName}</p>
-          <LearnerBar />
-        </>
-      )}
-      {current && <SunDayLab key={current.id} learnerId={current.id} name={current.name} />}
+      {/* Anyone can play. Runs are saved (and uploaded) only for a learner set on the Planting Log. */}
+      {learners && <SunDayLab key={current?.id ?? 'nobody'} learner={current && { id: current.id, name: current.name }} />}
     </div>
   )
 }
 
-function SunDayLab({ learnerId, name }: { learnerId: number; name: string }) {
+function SunDayLab({ learner }: { learner?: { id: number; name: string } }) {
   const announce = useAnnounce()
   const [design, setDesign] = useState<Design>(savedDesign)
   const [challenge, setChallenge] = useState<ChallengeId | null>(null)
@@ -154,8 +148,11 @@ function SunDayLab({ learnerId, name }: { learnerId: number; name: string }) {
     // once per run, even if this effect runs again
     if (saved.current !== run.id) {
       saved.current = run.id
-      void addSunDayRun({
-        learnerId,
+      // Without a learner nothing is saved, so nothing is uploaded either:
+      // the server needs a learner on every run.
+      if (!learner) announce(`${fill(text.run.done, { total })} ${text.saveHint}`)
+      else void addSunDayRun({
+        learnerId: learner.id,
         createdAt: run.id,
         design: run.design,
         challenge: run.challenge,
@@ -171,7 +168,7 @@ function SunDayLab({ learnerId, name }: { learnerId: number; name: string }) {
     // move focus to the results so keyboard and screen-reader users land on them
     resultsRef.current?.focus({ preventScroll: true })
     resultsRef.current?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' })
-  }, [phase, run, learnerId, announce])
+  }, [phase, run, learner, announce])
 
   // the hour on screen: the current frame while playing, the last sunny hour when done
   const i = run ? (phase === 'done' ? run.r.hours.length - 2 : frame) : -1
@@ -194,9 +191,11 @@ function SunDayLab({ learnerId, name }: { learnerId: number; name: string }) {
 
   return (
     <>
-      <p className="sd-who">
-        {fill(text.who, { name })} <Link to="/log">{text.whoLink}</Link>
-      </p>
+      {learner && (
+        <p className="sd-who">
+          {fill(text.who, { name: learner.name })} <Link to="/log">{text.whoLink}</Link>
+        </p>
+      )}
 
       <div className="sd-stage" ref={stageRef}>
         <div className="card sd-scene-card">
@@ -239,9 +238,9 @@ function SunDayLab({ learnerId, name }: { learnerId: number; name: string }) {
         />
       </Controls>
 
-      {phase === 'done' && run && <Results key={run.id} ref={resultsRef} run={run} />}
+      {phase === 'done' && run && <Results key={run.id} ref={resultsRef} run={run} saved={!!learner} />}
 
-      <RunsList learnerId={learnerId} />
+      <RunsList learnerId={learner?.id} />
     </>
   )
 }

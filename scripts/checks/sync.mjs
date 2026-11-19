@@ -4,7 +4,7 @@
 // entry and learner deletes, Clear all data, the status line and its
 // announcements, axe, the endpoint's checks on what it accepts, and the
 // rate limit (429 with Retry-After; the client waits and retries).
-// Sun Day: run upload, runs deleted with their learner and by Clear all data,
+// Simulation: run upload, runs deleted with their learner and by Clear all data,
 // the endpoint's checks on runs, and the v3 → v4 upgrade keeping queued records.
 //
 // The app must be built to post to the local endpoint and served on port 5173:
@@ -27,9 +27,9 @@ async function until(fn, ms = 15_000) {
 }
 const rows = (table, deviceId) => [...store[table].values()].filter((r) => r.device_id === deviceId)
 const status = (page) => page.locator('.sync-status').innerText()
-/** Runs one Sun Day for the current learner, without the animation. */
+/** Runs the simulation once for the current learner, without the animation. */
 async function sunDayRun(p, guess = 'More') {
-  await p.goto(BASE + '#/sun-day')
+  await p.goto(BASE + '#/simulation')
   await p.waitForSelector('.sd-scene')
   await p.emulateMedia({ reducedMotion: 'reduce' })
   await p.getByRole('radio', { name: guess, exact: true }).check()
@@ -81,7 +81,7 @@ const browser = await chromium.launch()
   ok((await fetch(API_URL, { method: 'OPTIONS', headers: { Origin: 'https://evil.example' } })).status === 403, 'endpoint: preflight from another origin → 403')
   ok(rows('entries', dev).length === 0 && store.photos.size === 0, 'endpoint: nothing refused was stored')
 
-  // Sun Day runs
+  // Simulation runs
   const run = {
     localId: 1, learnerId: 1, createdAt: Date.now(), design: { crop: 'basil', weather: 'october', days: 1, panels: 'big', height: 'low', fan: true, pump: false },
     challenge: null, guess: 'more', why: 'fan', actual: 'same', score: 128, fullSun: 57, food: 61, energy: 67,
@@ -276,16 +276,16 @@ ok(await page.evaluate(() => new Promise((res) => {
   q.onsuccess = () => { const c = q.result.transaction('tombstones').objectStore('tombstones').count(); c.onsuccess = () => { res(c.result === 0); q.result.close() } }
 })), 'entry delete: tombstone cleared after the server confirmed')
 
-/* ---------- Sun Day run upload ---------- */
+/* ---------- Simulation run upload ---------- */
 await sunDayRun(page)
 await page.waitForSelector('.sd-run')
-ok(await until(() => rows('sun_day_runs', deviceId).length === 1), 'Sun Day: run uploaded')
+ok(await until(() => rows('sun_day_runs', deviceId).length === 1), 'Simulation: run uploaded')
 const rosaRun = rows('sun_day_runs', deviceId)[0]
-ok(rosaRun?.learner_local_id === 1 && rosaRun.crop && rosaRun.guess === 'more' && Number.isInteger(rosaRun.score) && !rosaRun.deleted_at, 'Sun Day: run fields arrive, filed under the current learner')
-ok(Object.keys(rosaRun ?? {}).every((k) => ['device_id', 'local_id', 'learner_local_id', 'crop', 'weather', 'days', 'panels', 'height', 'fan', 'pump', 'challenge', 'guess', 'why', 'actual', 'score', 'full_sun', 'food', 'energy', 'created_at', 'updated_at', 'deleted_at'].includes(k)), 'Sun Day: only the known columns are sent')
+ok(rosaRun?.learner_local_id === 1 && rosaRun.crop && rosaRun.guess === 'more' && Number.isInteger(rosaRun.score) && !rosaRun.deleted_at, 'Simulation: run fields arrive, filed under the current learner')
+ok(Object.keys(rosaRun ?? {}).every((k) => ['device_id', 'local_id', 'learner_local_id', 'crop', 'weather', 'days', 'panels', 'height', 'fan', 'pump', 'challenge', 'guess', 'why', 'actual', 'score', 'full_sun', 'food', 'energy', 'created_at', 'updated_at', 'deleted_at'].includes(k)), 'Simulation: only the known columns are sent')
 await page.goto(BASE + '#/log')
 await page.waitForFunction(() => document.querySelector('.sync-status')?.textContent.trim() === 'All entries uploaded', null, { timeout: 5000 }).catch(() => {})
-ok((await status(page)) === 'All entries uploaded', 'Sun Day: status "All entries uploaded" once the run is up')
+ok((await status(page)) === 'All entries uploaded', 'Simulation: status "All entries uploaded" once the run is up')
 
 /* ---------- Learner delete ---------- */
 await page.goto(BASE + '#/log')
@@ -301,7 +301,7 @@ ok(await until(() => rows('entries', deviceId).some((e) => e.note === "Sam's ent
 const sam = rows('learners', deviceId).find((l) => l.name === 'Sam')
 ok(!!sam, 'second learner: uploaded')
 await sunDayRun(page, 'Less')
-ok(await until(() => rows('sun_day_runs', deviceId).some((r) => r.learner_local_id === sam.local_id)), "second learner: Sam's Sun Day run uploaded")
+ok(await until(() => rows('sun_day_runs', deviceId).some((r) => r.learner_local_id === sam.local_id)), "second learner: Sam's simulation run uploaded")
 await page.goto(BASE + '#/log')
 await page.getByRole('button', { name: /^Edit Sam's/ }).click()
 await page.getByRole('button', { name: "Delete Sam's log" }).click()
@@ -311,7 +311,7 @@ ok(store.learners.get(`${deviceId}/${sam.local_id}`).name === '', 'learner delet
 const samEntry = rows('entries', deviceId).find((e) => e.learner_local_id === sam.local_id)
 ok(!!samEntry?.deleted_at && samEntry.note === '', "learner delete: their entry deleted and note blanked")
 ok(!rosa.deleted_at && !store.learners.get(`${deviceId}/1`).deleted_at, 'learner delete: the other learner stays')
-ok(await until(() => rows('sun_day_runs', deviceId).find((r) => r.learner_local_id === sam.local_id)?.deleted_at), "learner delete: their Sun Day run marked deleted on the server")
+ok(await until(() => rows('sun_day_runs', deviceId).find((r) => r.learner_local_id === sam.local_id)?.deleted_at), "learner delete: their simulation run marked deleted on the server")
 ok(!rows('sun_day_runs', deviceId).find((r) => r.learner_local_id === 1).deleted_at, "learner delete: the other learner's run stays")
 
 /* ---------- Clear all data ---------- */
@@ -320,11 +320,11 @@ await page.getByRole('button', { name: 'Clear all data' }).click()
 await page.getByRole('dialog').getByRole('button', { name: 'Yes, clear everything' }).click()
 ok(await until(() => rows('learners', deviceId).every((l) => l.deleted_at) && rows('entries', deviceId).every((e) => e.deleted_at)), 'clear all: every learner and entry deleted on the server')
 ok(rows('learners', deviceId).every((l) => l.name === '') && rows('entries', deviceId).every((e) => e.note === ''), 'clear all: names and notes blanked')
-ok(await until(() => rows('sun_day_runs', deviceId).length === 2 && rows('sun_day_runs', deviceId).every((r) => r.deleted_at)), 'clear all: every Sun Day run marked deleted on the server')
+ok(await until(() => rows('sun_day_runs', deviceId).length === 2 && rows('sun_day_runs', deviceId).every((r) => r.deleted_at)), 'clear all: every simulation run marked deleted on the server')
 ok(await page.evaluate(() => new Promise((res) => {
   const q = indexedDB.open('bright-ideas')
   q.onsuccess = () => { const c = q.result.transaction('sunDayRuns').objectStore('sunDayRuns').count(); c.onsuccess = () => { res(c.result === 0); q.result.close() } }
-})), 'clear all: no Sun Day runs left on the device')
+})), 'clear all: no simulation runs left on the device')
 ok(![...store.photos.keys()].some((p) => p.startsWith(deviceId)), "clear all: the device's photos removed")
 ok((await page.evaluate(() => localStorage.getItem('bright-ideas:deviceId'))) === deviceId, 'clear all: device id kept')
 await page.goto(BASE + '#/log')
@@ -373,7 +373,7 @@ ok(store.unknown.length === 0, `fake Supabase saw only expected calls ${store.un
   await v1.close()
 }
 
-/* ---------- Upgrade from Dexie v3 (before Sun Day) keeps what is still queued ---------- */
+/* ---------- Upgrade from Dexie v3 (before the simulation) keeps what is still queued ---------- */
 {
   const v3 = await browser.newContext({ viewport: { width: 360, height: 900 } })
   const p3 = await v3.newPage()
@@ -440,7 +440,7 @@ ok(store.unknown.length === 0, `fake Supabase saw only expected calls ${store.un
   ok(after3.version === 40 && after3.stores.includes('sunDayRuns'), `v3 → v4: database upgraded to v4 with a sunDayRuns table (IndexedDB version ${after3.version})`)
   ok(after3.entries.length === 3 && after3.learners.length === 2 && after3.entries.find((e) => e.id === 2)?.hasPhoto, 'v3 → v4: every learner, entry and photo kept on the device')
   ok(after3.entries.every((e) => !e.dirty && !e.photoDirty) && after3.learners.every((l) => !l.dirty) && after3.tombstones === 0, 'v3 → v4: queue empty once uploaded (dirty cleared, tombstone sent)')
-  ok(after3.runs === 0, 'v3 → v4: no Sun Day runs invented')
+  ok(after3.runs === 0, 'v3 → v4: no simulation runs invented')
   await v3.close()
 }
 

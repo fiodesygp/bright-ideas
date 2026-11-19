@@ -1,5 +1,4 @@
 import type { PartType } from '../../content'
-import { BOUNDS } from './geometry'
 import './parts.css'
 
 const RED = 'var(--wire-red)'
@@ -12,7 +11,7 @@ function Sign({ x, y, children }: { x: number; y: number; children: string }) {
   )
 }
 
-export function PartDrawing({ type }: { type: PartType }) {
+function PartDrawing({ type }: { type: PartType }) {
   switch (type) {
     case 'panel':
       return (
@@ -104,6 +103,17 @@ function Jaw({ x, flip }: { x: number; flip: boolean }) {
       <rect x={-6} y={-7} width={10} height={14} rx={3} fill={RED} />
     </g>
   )
+}
+
+/** Box around each drawing, for the card thumbnails: [x, y, w, h] */
+const BOUNDS: Record<PartType, [number, number, number, number]> = {
+  panel: [-96, -36, 192, 90],
+  led: [-28, -22, 56, 64],
+  resistor: [-16, -40, 32, 80],
+  motor: [-58, -48, 116, 74],
+  pump: [-36, -84, 108, 112],
+  water: [-54, -44, 108, 110],
+  clip: [-80, -26, 160, 52],
 }
 
 /** Stand-alone drawing of one part, used as a photo placeholder on cards. */

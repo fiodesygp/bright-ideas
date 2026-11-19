@@ -1,9 +1,10 @@
 {
-  "title": "Sun Day",
+  "title": "Simulation",
   "eyebrow": "Design · Predict · Test · Explain",
   "lede": "Can one sunny spot grow food and make energy? Set up a solar panel above a seedling, guess what will happen, then run a sunny Arizona day and see how your plant and your panel did.",
   "estimates": "The numbers are estimates for learning, not measurements.",
-  "needName": "Add your name first. Your Sun Day runs are saved with your Planting Log.",
+  "saveHint": "Add your name on the Planting Log to save your runs.",
+  "saveHintLink": "Go to the Planting Log",
   "who": "Runs are saved for {name}.",
   "whoLink": "Not you? Pick your name on the Planting Log.",
   "sceneLabel": "Side view of your setup: {crop}, {panel}, {loads}.",
@@ -16,7 +17,7 @@
     "clock": "{hour}:00 · Day {day}",
     "running": "The {span} is running.",
     "done": "Results are ready. Sun Score: {total} out of 200.",
-    "saved": "Saved to My Sun Day runs.",
+    "saved": "Saved to My simulation runs.",
     "spanDay": "day",
     "spanWeek": "week"
   },
@@ -256,7 +257,7 @@
   },
 
   "runs": {
-    "title": "My Sun Day runs",
+    "title": "My simulation runs",
     "intro": "Every run is saved here, newest first. Runs are uploaded to the project team with your log.",
     "empty": "No runs yet. Run a day and it will show up here.",
     "score": "Sun Score {score}",

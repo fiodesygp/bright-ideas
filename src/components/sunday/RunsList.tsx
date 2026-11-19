@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { sundayContent as text } from '../../content'
 import { getSunDayRuns, type SunDayRun } from '../../data/db'
 import { fill } from '../../lib/labels'
+import SaveHint from './SaveHint'
 
 const r = text.runs
 
@@ -24,10 +25,18 @@ function predictionText(run: Pick<SunDayRun, 'guess' | 'why' | 'actual'>) {
   return fill(r.guessed, { guess: words[run.guess], because, actual: words[run.actual] })
 }
 
-/** "My Sun Day runs": the current learner's runs, newest first. */
-export default function RunsList({ learnerId }: { learnerId: number }) {
-  const runs = useLiveQuery(() => getSunDayRuns(learnerId), [learnerId])
+/** "My simulation runs": the current learner's runs, newest first. With nobody logging, a hint instead. */
+export default function RunsList({ learnerId }: { learnerId?: number }) {
+  const runs = useLiveQuery(() => (learnerId == null ? [] : getSunDayRuns(learnerId)), [learnerId])
   if (!runs) return null
+  if (learnerId == null) {
+    return (
+      <section className="section sd-runs" aria-labelledby="sd-runs-title">
+        <h2 id="sd-runs-title" tabIndex={-1}>{r.title}</h2>
+        <SaveHint />
+      </section>
+    )
+  }
 
   return (
     <section className="section sd-runs" aria-labelledby="sd-runs-title">

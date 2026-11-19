@@ -1,4 +1,4 @@
-import { HashRouter, Route, Routes } from 'react-router'
+import { HashRouter, Navigate, Route, Routes } from 'react-router'
 import { AnnouncerProvider } from './components/Announcer'
 import Layout from './components/Layout'
 import { SettingsProvider } from './data/settings'
@@ -6,8 +6,6 @@ import Home from './pages/Home'
 import Log from './pages/Log'
 import Dashboard from './pages/Dashboard'
 import Learn from './pages/Learn'
-import Connect from './pages/Connect'
-import CircuitBuilder from './pages/CircuitBuilder'
 import Settings from './pages/Settings'
 import SunDay from './pages/SunDay'
 import NotFound from './pages/NotFound'
@@ -25,9 +23,10 @@ export default function App() {
               <Route path="log" element={<Log />} />
               <Route path="log/dashboard" element={<Dashboard />} />
               <Route path="learn" element={<Learn />} />
-              <Route path="connect" element={<Connect />} />
-              <Route path="connect/:circuitId" element={<CircuitBuilder />} />
-              <Route path="sun-day" element={<SunDay />} />
+              <Route path="simulation" element={<SunDay />} />
+              {/* Old links: Sun Day was renamed, and Simulation replaced Connect and its circuits. */}
+              <Route path="sun-day" element={<Navigate to="/simulation" replace />} />
+              <Route path="connect/*" element={<Navigate to="/simulation" replace />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Route>
