@@ -17,7 +17,9 @@ const FIRST_RETRY_MS = 5_000
 const MAX_RETRY_MS = 5 * 60_000
 
 async function send(url: string, init: RequestInit) {
-  const res = await fetch(url, { ...init, mode: 'cors', credentials: 'omit', cache: 'no-store' })
+  // Same-origin credentials: on a protected Vercel preview the request needs
+  // Vercel's own cookie; nothing is ever sent cross-origin with cookies.
+  const res = await fetch(url, { ...init, mode: 'cors', credentials: 'same-origin', cache: 'no-store' })
   if (!res.ok) throw new Error(`Sync request failed: ${res.status} ${await res.text().catch(() => '')}`)
 }
 
