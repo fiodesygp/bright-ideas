@@ -4,6 +4,8 @@
 // entry and learner deletes, Clear all data, the status line and its
 // announcements, axe, the endpoint's checks on what it accepts, and the
 // rate limit (429 with Retry-After; the client waits and retries).
+// Sun Day: run upload, runs deleted with their learner and by Clear all data,
+// the endpoint's checks on runs, and the v3 → v4 upgrade keeping queued records.
 //
 // The app must be built to post to the local endpoint and served on port 5173:
 //   VITE_SYNC_URL=http://localhost:5180/api/sync npm run build
@@ -25,6 +27,16 @@ async function until(fn, ms = 15_000) {
 }
 const rows = (table, deviceId) => [...store[table].values()].filter((r) => r.device_id === deviceId)
 const status = (page) => page.locator('.sync-status').innerText()
+/** Runs one Sun Day for the current learner, without the animation. */
+async function sunDayRun(p, guess = 'More') {
+  await p.goto(BASE + '#/sun-day')
+  await p.waitForSelector('.sd-scene')
+  await p.emulateMedia({ reducedMotion: 'reduce' })
+  await p.getByRole('radio', { name: guess, exact: true }).check()
+  await p.getByRole('button', { name: 'Run the day', exact: true }).last().click()
+  await p.waitForSelector('.sd-results')
+  await p.emulateMedia({ reducedMotion: 'no-preference' })
+}
 const said = (page, text, timeout = 6000) =>
   page.waitForFunction((t) => document.getElementById('announcer')?.textContent === t, text, { timeout }).then(() => true, () => false)
 
@@ -68,6 +80,30 @@ const browser = await chromium.launch()
   ok(ghp.headers.get('access-control-allow-origin') === 'https://fiodesygp.github.io', 'endpoint: GitHub Pages origin allowed')
   ok((await fetch(API_URL, { method: 'OPTIONS', headers: { Origin: 'https://evil.example' } })).status === 403, 'endpoint: preflight from another origin → 403')
   ok(rows('entries', dev).length === 0 && store.photos.size === 0, 'endpoint: nothing refused was stored')
+
+  // Sun Day runs
+  const run = {
+    localId: 1, learnerId: 1, createdAt: Date.now(), design: { crop: 'basil', weather: 'october', days: 1, panels: 'big', height: 'low', fan: true, pump: false },
+    challenge: null, guess: 'more', why: 'fan', actual: 'same', score: 128, fullSun: 57, food: 61, energy: 67,
+  }
+  const withRun = (over, design = {}) => post({ ...base, sunDayRuns: [{ ...run, ...over, design: { ...run.design, ...design } }] })
+  ok((await withRun({ note: 'x' })).status === 400, 'endpoint: unknown run field → 400')
+  ok((await withRun({}, { tilt: 30 })).status === 400, 'endpoint: unknown design field → 400')
+  ok((await withRun({}, { crop: 'tomato' })).status === 400, 'endpoint: crop not in model.json → 400')
+  ok((await withRun({}, { height: 'mid' })).status === 400, 'endpoint: height "mid" (tuning only) → 400')
+  ok((await withRun({}, { days: 3 })).status === 400, 'endpoint: 3 days → 400')
+  ok((await withRun({ challenge: 'moon' })).status === 400, 'endpoint: unknown challenge → 400')
+  ok((await withRun({ why: 'because' })).status === 400, 'endpoint: free-text reason → 400')
+  ok((await withRun({ score: 201 })).status === 400 && (await withRun({ food: -1 })).status === 400 && (await withRun({ energy: 50.5 })).status === 400, 'endpoint: scores out of range or not whole → 400')
+  ok((await withRun({ learnerId: null })).status === 400, 'endpoint: run without a learner → 400')
+  ok(store.sun_day_runs.size === 0, 'endpoint: no refused run stored')
+  ok((await withRun({ challenge: 'heat', guess: null, why: null }, { crop: 'chili', panels: 'none' })).status === 200, 'endpoint: valid run → 200')
+  const saved = store.sun_day_runs.get(`${dev}/1`)
+  ok(saved?.crop === 'chili' && saved.panels === 'none' && saved.fan === true && saved.challenge === 'heat' && saved.guess === null && saved.score === 128 && saved.full_sun === 57 && saved.learner_local_id === 1, 'endpoint: run columns stored')
+  ok((await post({ ...base, deletes: [{ table: 'sunDayRuns', localId: 1 }] })).status === 200 && !!store.sun_day_runs.get(`${dev}/1`)?.deleted_at, 'endpoint: run delete sets deleted_at')
+  ok((await post({ ...base, deletes: [{ table: 'photos', localId: 1 }] })).status === 400, 'endpoint: delete from an unknown table → 400')
+  ok((await post({ ...base, learners: [{ localId: 2, name: 'Old', plant: '', startDate: '' }] })).status === 200, 'endpoint: a batch from the previous app version (no sunDayRuns) → 200')
+  store.sun_day_runs.clear()
 
   // Rate limit: per IP, 429 with Retry-After once over the limit.
   setLimit(3)
@@ -240,6 +276,17 @@ ok(await page.evaluate(() => new Promise((res) => {
   q.onsuccess = () => { const c = q.result.transaction('tombstones').objectStore('tombstones').count(); c.onsuccess = () => { res(c.result === 0); q.result.close() } }
 })), 'entry delete: tombstone cleared after the server confirmed')
 
+/* ---------- Sun Day run upload ---------- */
+await sunDayRun(page)
+await page.waitForSelector('.sd-run')
+ok(await until(() => rows('sun_day_runs', deviceId).length === 1), 'Sun Day: run uploaded')
+const rosaRun = rows('sun_day_runs', deviceId)[0]
+ok(rosaRun?.learner_local_id === 1 && rosaRun.crop && rosaRun.guess === 'more' && Number.isInteger(rosaRun.score) && !rosaRun.deleted_at, 'Sun Day: run fields arrive, filed under the current learner')
+ok(Object.keys(rosaRun ?? {}).every((k) => ['device_id', 'local_id', 'learner_local_id', 'crop', 'weather', 'days', 'panels', 'height', 'fan', 'pump', 'challenge', 'guess', 'why', 'actual', 'score', 'full_sun', 'food', 'energy', 'created_at', 'updated_at', 'deleted_at'].includes(k)), 'Sun Day: only the known columns are sent')
+await page.goto(BASE + '#/log')
+await page.waitForFunction(() => document.querySelector('.sync-status')?.textContent.trim() === 'All entries uploaded', null, { timeout: 5000 }).catch(() => {})
+ok((await status(page)) === 'All entries uploaded', 'Sun Day: status "All entries uploaded" once the run is up')
+
 /* ---------- Learner delete ---------- */
 await page.goto(BASE + '#/log')
 await page.getByRole('button', { name: "Who's logging?" }).click()
@@ -253,6 +300,9 @@ await page.getByRole('button', { name: 'Save entry' }).click()
 ok(await until(() => rows('entries', deviceId).some((e) => e.note === "Sam's entry")), 'second learner: entry uploaded')
 const sam = rows('learners', deviceId).find((l) => l.name === 'Sam')
 ok(!!sam, 'second learner: uploaded')
+await sunDayRun(page, 'Less')
+ok(await until(() => rows('sun_day_runs', deviceId).some((r) => r.learner_local_id === sam.local_id)), "second learner: Sam's Sun Day run uploaded")
+await page.goto(BASE + '#/log')
 await page.getByRole('button', { name: /^Edit Sam's/ }).click()
 await page.getByRole('button', { name: "Delete Sam's log" }).click()
 await page.getByRole('dialog', { name: "Delete Sam's log?" }).getByRole('button', { name: 'Delete' }).click()
@@ -261,6 +311,8 @@ ok(store.learners.get(`${deviceId}/${sam.local_id}`).name === '', 'learner delet
 const samEntry = rows('entries', deviceId).find((e) => e.learner_local_id === sam.local_id)
 ok(!!samEntry?.deleted_at && samEntry.note === '', "learner delete: their entry deleted and note blanked")
 ok(!rosa.deleted_at && !store.learners.get(`${deviceId}/1`).deleted_at, 'learner delete: the other learner stays')
+ok(await until(() => rows('sun_day_runs', deviceId).find((r) => r.learner_local_id === sam.local_id)?.deleted_at), "learner delete: their Sun Day run marked deleted on the server")
+ok(!rows('sun_day_runs', deviceId).find((r) => r.learner_local_id === 1).deleted_at, "learner delete: the other learner's run stays")
 
 /* ---------- Clear all data ---------- */
 await page.goto(BASE + '#/settings')
@@ -268,6 +320,11 @@ await page.getByRole('button', { name: 'Clear all data' }).click()
 await page.getByRole('dialog').getByRole('button', { name: 'Yes, clear everything' }).click()
 ok(await until(() => rows('learners', deviceId).every((l) => l.deleted_at) && rows('entries', deviceId).every((e) => e.deleted_at)), 'clear all: every learner and entry deleted on the server')
 ok(rows('learners', deviceId).every((l) => l.name === '') && rows('entries', deviceId).every((e) => e.note === ''), 'clear all: names and notes blanked')
+ok(await until(() => rows('sun_day_runs', deviceId).length === 2 && rows('sun_day_runs', deviceId).every((r) => r.deleted_at)), 'clear all: every Sun Day run marked deleted on the server')
+ok(await page.evaluate(() => new Promise((res) => {
+  const q = indexedDB.open('bright-ideas')
+  q.onsuccess = () => { const c = q.result.transaction('sunDayRuns').objectStore('sunDayRuns').count(); c.onsuccess = () => { res(c.result === 0); q.result.close() } }
+})), 'clear all: no Sun Day runs left on the device')
 ok(![...store.photos.keys()].some((p) => p.startsWith(deviceId)), "clear all: the device's photos removed")
 ok((await page.evaluate(() => localStorage.getItem('bright-ideas:deviceId'))) === deviceId, 'clear all: device id kept')
 await page.goto(BASE + '#/log')
@@ -314,6 +371,77 @@ ok(store.unknown.length === 0, `fake Supabase saw only expected calls ${store.un
   await startLog(p1, 'Vic')
   ok(await until(() => rows('entries', dev1).every((e) => e.learner_local_id === 1) && rows('learners', dev1)[0]?.name === 'Vic'), 'v1 backfill: entries re-uploaded with the first learner after adoption')
   await v1.close()
+}
+
+/* ---------- Upgrade from Dexie v3 (before Sun Day) keeps what is still queued ---------- */
+{
+  const v3 = await browser.newContext({ viewport: { width: 360, height: 900 } })
+  const p3 = await v3.newPage()
+  const blank3 = new URL('check-blank.html', BASE).href
+  await p3.route(blank3, (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>blank</title>' }))
+  await p3.goto(blank3)
+  const photo3 = await makePhoto(p3)
+  await p3.evaluate(async (b64) => {
+    const photo = new Blob([Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))], { type: 'image/jpeg' })
+    await new Promise((resolve, reject) => {
+      const q = indexedDB.open('bright-ideas', 30) // Dexie version 3 = IndexedDB version 30
+      q.onupgradeneeded = () => {
+        const db = q.result
+        const l = db.createObjectStore('learners', { keyPath: 'id', autoIncrement: true })
+        l.createIndex('dirty', 'dirty')
+        const e = db.createObjectStore('entries', { keyPath: 'id', autoIncrement: true })
+        e.createIndex('plantId', 'plantId'); e.createIndex('date', 'date'); e.createIndex('createdAt', 'createdAt')
+        e.createIndex('[plantId+date]', ['plantId', 'date']); e.createIndex('dirty', 'dirty')
+        const t = db.createObjectStore('tombstones', { keyPath: 'id', autoIncrement: true })
+        t.createIndex('table', 'table'); t.createIndex('localId', 'localId')
+        db.createObjectStore('meta', { keyPath: 'key' })
+      }
+      q.onsuccess = () => {
+        const tx = q.result.transaction(['learners', 'entries', 'tombstones', 'meta'], 'readwrite')
+        const now = Date.now()
+        tx.objectStore('meta').put({ key: 'deviceId', value: '3a3a3a3a-0000-4000-8000-000000000003' })
+        // Uploaded before: no dirty mark.
+        tx.objectStore('learners').add({ name: 'Uma', plant: 'Lettuce', startDate: '2026-11-01', syncedAt: now - 60_000 })
+        tx.objectStore('entries').add({ plantId: 1, learnerId: 1, date: '2026-11-02', createdAt: now - 120_000, height: 3, heightUnit: 'cm', heightCm: 3, note: 'Already up', syncedAt: now - 60_000 })
+        // Saved by v3 while offline: still queued, one with a photo, one deleted.
+        tx.objectStore('learners').add({ name: 'Ian', plant: '', startDate: '', dirty: 1 })
+        tx.objectStore('entries').add({ plantId: 1, learnerId: 1, date: '2026-11-03', createdAt: now - 30_000, height: 4, heightUnit: 'cm', heightCm: 4, note: 'Queued in v3', soilChecked: true, watered: false, photo, dirty: 1, photoDirty: 1 })
+        tx.objectStore('entries').add({ plantId: 1, learnerId: 2, date: '2026-11-03', createdAt: now - 20_000, height: 2, heightUnit: 'in', heightCm: 5.08, note: "Ian's queued", dirty: 1 })
+        tx.objectStore('tombstones').add({ table: 'entries', localId: 9, deletedAt: now - 10_000 })
+        tx.oncomplete = () => { q.result.close(); resolve() }
+        tx.onerror = reject
+      }
+      q.onerror = reject
+    })
+  }, photo3.buffer.toString('base64'))
+  // Keep the old device id in localStorage too, as v3 would have.
+  await p3.evaluate(() => localStorage.setItem('bright-ideas:deviceId', '3a3a3a3a-0000-4000-8000-000000000003'))
+  const dev3 = '3a3a3a3a-0000-4000-8000-000000000003'
+  await p3.goto(BASE + '#/log')
+  await p3.waitForSelector('.learner-bar')
+  ok(await until(() => rows('entries', dev3).length === 2 && rows('learners', dev3).length === 1), 'v3 → v4: both queued entries and the queued learner uploaded')
+  ok(!store.entries.get(`${dev3}/1`) && !store.learners.get(`${dev3}/1`), 'v3 → v4: records already uploaded are not sent again')
+  ok(store.entries.get(`${dev3}/2`)?.note === 'Queued in v3' && store.entries.get(`${dev3}/2`).soil_checked === true && store.photos.get(`${dev3}/2.jpg`)?.length === photo3.buffer.length, 'v3 → v4: queued entry fields and photo arrive')
+  ok(store.learners.get(`${dev3}/2`)?.name === 'Ian' && store.entries.get(`${dev3}/3`)?.learner_local_id === 2, "v3 → v4: queued learner and their entry arrive")
+  await p3.waitForFunction(() => document.querySelector('.sync-status')?.textContent.trim() === 'All entries uploaded', null, { timeout: 15000 }).catch(() => {})
+  const after3 = await p3.evaluate(() => new Promise((res) => {
+    const q = indexedDB.open('bright-ideas')
+    q.onsuccess = () => {
+      const db = q.result
+      const out = { version: db.version, stores: [...db.objectStoreNames] }
+      const tx = db.transaction(['entries', 'learners', 'tombstones', 'sunDayRuns'])
+      tx.objectStore('entries').getAll().onsuccess = (e) => { out.entries = e.target.result.map((x) => ({ id: x.id, dirty: x.dirty, photoDirty: x.photoDirty, hasPhoto: !!x.photo })) }
+      tx.objectStore('learners').getAll().onsuccess = (e) => { out.learners = e.target.result.map((x) => ({ id: x.id, dirty: x.dirty, name: x.name })) }
+      tx.objectStore('tombstones').count().onsuccess = (e) => { out.tombstones = e.target.result }
+      tx.objectStore('sunDayRuns').count().onsuccess = (e) => { out.runs = e.target.result }
+      tx.oncomplete = () => { db.close(); res(out) }
+    }
+  }))
+  ok(after3.version === 40 && after3.stores.includes('sunDayRuns'), `v3 → v4: database upgraded to v4 with a sunDayRuns table (IndexedDB version ${after3.version})`)
+  ok(after3.entries.length === 3 && after3.learners.length === 2 && after3.entries.find((e) => e.id === 2)?.hasPhoto, 'v3 → v4: every learner, entry and photo kept on the device')
+  ok(after3.entries.every((e) => !e.dirty && !e.photoDirty) && after3.learners.every((l) => !l.dirty) && after3.tombstones === 0, 'v3 → v4: queue empty once uploaded (dirty cleared, tombstone sent)')
+  ok(after3.runs === 0, 'v3 → v4: no Sun Day runs invented')
+  await v3.close()
 }
 
 /* ---------- Status line in dark mode ---------- */

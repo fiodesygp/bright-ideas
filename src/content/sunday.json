@@ -1,0 +1,278 @@
+{
+  "title": "Sun Day",
+  "eyebrow": "Design · Predict · Test · Explain",
+  "lede": "Can one sunny spot grow food and make energy? Set up a solar panel above a seedling, guess what will happen, then run a sunny Arizona day and see how your plant and your panel did.",
+  "estimates": "The numbers are estimates for learning, not measurements.",
+  "needName": "Add your name first. Your Sun Day runs are saved with your Planting Log.",
+  "who": "Runs are saved for {name}.",
+  "whoLink": "Not you? Pick your name on the Planting Log.",
+  "sceneLabel": "Side view of your setup: {crop}, {panel}, {loads}.",
+
+  "run": {
+    "day": "Run the day",
+    "week": "Run the week",
+    "again": "Run it again",
+    "skip": "Skip to results",
+    "clock": "{hour}:00 · Day {day}",
+    "running": "The {span} is running.",
+    "done": "Results are ready. Sun Score: {total} out of 200.",
+    "saved": "Saved to My Sun Day runs.",
+    "spanDay": "day",
+    "spanWeek": "week"
+  },
+
+  "scene": {
+    "tank": "tank",
+    "gap": "gap",
+    "night": "Night: the panel rests",
+    "panelAt": "{panel}, set {height}",
+    "loads": {
+      "none": "no fan or pump",
+      "fan": "fan",
+      "pump": "pump with a water tank",
+      "both": "fan, and pump with a water tank"
+    }
+  },
+
+  "gauges": {
+    "energy": "Energy made",
+    "wh": "Wh",
+    "leafTemp": "Leaf temperature",
+    "degF": "{n}°F",
+    "comfy": "comfy",
+    "warm": "warm",
+    "tooHot": "too hot",
+    "soil": "Soil water",
+    "dry": "dry",
+    "good": "good",
+    "soggy": "soggy",
+    "growth": "Plant growth",
+    "atSunrise": "These show your setup at sunrise. Run the day to watch them change."
+  },
+
+  "chips": {
+    "label": "What is running now",
+    "fanOn": "Fan running",
+    "fanOff": "Fan off",
+    "pumpOn": "Pump watering",
+    "pumpOff": "Pump off",
+    "tank": "Tank {n}%",
+    "light": "{n}% of sunlight reaches the plant"
+  },
+
+  "controls": {
+    "playMode": "Play mode",
+    "free": "Free play",
+    "step1": "1 · Pick a plant and a day",
+    "plant": "Plant",
+    "weather": "Weather",
+    "howLong": "How long",
+    "step2": "2 · Set up your panel",
+    "panelSize": "Panel size",
+    "panelHint": "Bigger panels make more energy, and more shade.",
+    "height": "Panel height",
+    "heightHint": "A high panel lets more light in from the sides.",
+    "step3": "3 · Use the energy",
+    "turnOn": "Turn on one, both or neither",
+    "fan": "Fan",
+    "fanText": "cools the plant",
+    "pump": "Pump",
+    "pumpText": "waters the plant",
+    "needed": "This challenge needs it.",
+    "waterPump": "The pump waters the plant by itself when the soil gets dry. It needs strong sun and a big panel.",
+    "waterHand": "Without the pump, you water the plant once each morning.",
+    "step4": "4 · Make a prediction"
+  },
+
+  "crops": {
+    "lettuce": "Lettuce",
+    "basil": "Basil",
+    "bean": "Bush bean",
+    "chili": "Chili pepper"
+  },
+  "cropHints": {
+    "lettuce": "Likes cool weather and some shade.",
+    "basil": "Likes warmth and bright light.",
+    "bean": "Likes warmth and bright light.",
+    "chili": "Loves sun and handles heat well."
+  },
+  "weather": {
+    "october": "Sunny day, 90 °F",
+    "july": "Heat wave, 110 °F"
+  },
+  "days": {
+    "1": "1 day",
+    "7": "1 week"
+  },
+  "panels": {
+    "none": "No panel",
+    "small": "Small",
+    "big": "Big",
+    "both": "Both"
+  },
+  "panelNames": {
+    "none": "no panel",
+    "small": "small panel",
+    "big": "big panel",
+    "both": "both panels"
+  },
+  "heights": {
+    "low": "Low",
+    "high": "High"
+  },
+
+  "predict": {
+    "prompt": "Compared with the same plant in full sun with no panel, your plant will grow…",
+    "guessLabel": "Your guess",
+    "guesses": {
+      "more": "More",
+      "same": "About the same",
+      "less": "Less"
+    },
+    "because": "…because",
+    "whyLabel": "Your reason",
+    "why": {
+      "shade": "the shade keeps it cool",
+      "light": "it needs lots of light",
+      "fan": "the fan cools it",
+      "pump": "the pump keeps the soil wet"
+    },
+    "skip": "Skip prediction",
+    "skipDay": "Skip prediction and run the day",
+    "skipWeek": "Skip prediction and run the week",
+    "skipAgain": "Skip prediction and run it again"
+  },
+
+  "results": {
+    "title": "Your Sun Score",
+    "outOf": "out of 200",
+    "ref": "A plot with no panel scores {fs}. Beat it by sharing the sun.",
+    "food": "Food",
+    "energy": "Energy",
+    "fullSunMark": "Full-sun plant",
+    "note": "The line on the Food bar marks a plant in full sun with no panel. Food is out of a perfect day. Energy is out of the best panel setup.",
+    "yourPrediction": "Your prediction",
+    "whatHappened": "What happened",
+    "why": "Why",
+    "tryNext": "Try next",
+    "guessed": "You guessed {guess}. It grew {actual}.",
+    "guessedBecause": "You guessed {guess} because {why}. It grew {actual}.",
+    "matched": "Your prediction matched.",
+    "surprise": "Surprise! Read why below.",
+    "skipped": "You skipped the prediction this time.",
+    "words": {
+      "more": "more",
+      "same": "about the same",
+      "less": "less"
+    },
+    "what": "Your {crop} grew {food}% of {perfect}. A full-sun plant grew {fs}%. Your panel made {wh} Wh, which is {energy}% of the best setup.",
+    "perfectDay": "a perfect day",
+    "perfectWeek": "a perfect week",
+    "passed": "Challenge passed",
+    "notYet": "Not yet",
+    "hint": "Need a hint?",
+    "moreHelp": "More help",
+    "allHelp": "That is all the help",
+    "ladder": ["Question", "Hint", "Example"]
+  },
+
+  "challenges": {
+    "heat": {
+      "name": "Challenge 1: Beat the heat",
+      "goal": "Heat wave week with basil. Grow at least twice as much as basil with no panel.",
+      "pass": "Your basil grew more than twice the no-panel basil.",
+      "fail": "Your basil needs more protection from the heat."
+    },
+    "fan": {
+      "name": "Challenge 2: Fan all afternoon",
+      "goal": "Sunny day. Keep the fan spinning every hour from noon to 5 pm, and grow at least as much as a plant with no panel.",
+      "pass": "The fan ran all afternoon and the plant kept up.",
+      "fail": "The fan stopped in the afternoon, or the plant fell behind."
+    },
+    "tank": {
+      "name": "Challenge 3: Water by itself all week",
+      "goal": "Sunny week with the pump and no hand watering. The soil may be dry for 30 hours at most.",
+      "pass": "The soil stayed just right all week.",
+      "fail": "The soil got too dry. Try slowing down how fast it dries."
+    }
+  },
+
+  "rules": {
+    "lowLight": {
+      "why": "Your {crop} got about {light}% of the sun under the panels. It wanted more light to grow fast.",
+      "next": "How could you give the plant more light and still make energy?",
+      "hints": ["Light can sneak in from the sides.", "A high panel lets more side light in. A smaller panel makes less shade.", "Try the panel set high, or the small panel."]
+    },
+    "hotShade": {
+      "why": "Leaves were above {hi} °F for {hours} sunny hours. That is too warm for {crop} to grow well.",
+      "next": "What could shade the plant during the hottest hours?",
+      "hints": ["When is the sun strongest? What is above the plant then?", "A bigger panel makes more shade, and shade cools the leaves.", "Try the big panel or both panels."]
+    },
+    "hotFan": {
+      "why": "Leaves were above {hi} °F for {hours} sunny hours. That is too warm for {crop} to grow well.",
+      "next": "Your panel makes power. What could it run to cool the leaves?",
+      "hints": ["Moving air carries heat away from the leaves.", "A running fan cools the leaves by a few degrees.", "Turn on the fan."]
+    },
+    "hotHeight": {
+      "why": "Leaves were above {hi} °F for {hours} sunny hours. That is too warm for {crop} to grow well.",
+      "next": "How could hot air escape from under the panel?",
+      "hints": ["Hot air gets trapped under a low panel.", "A high panel lets hot air out and side light in.", "Set the panel high."]
+    },
+    "hotPlant": {
+      "why": "Leaves were above {hi} °F for {hours} sunny hours. That is too warm for {crop} to grow well.",
+      "next": "Your setup already gives shade and wind. Which plant handles heat best?",
+      "hints": ["Some plants like it hot. Read the hint under each plant.", "Chili pepper handles heat better than lettuce or basil.", "Try chili pepper with the same setup."]
+    },
+    "hotMax": {
+      "why": "Leaves were above {hi} °F for {hours} sunny hours. Even chili pepper grows slowly when it is that hot.",
+      "next": "This heat is tough for any plant. Did your setup still beat the plant with no panel?",
+      "hints": ["Look at the line on the Food bar.", "Shade, a high panel and the fan each cool the leaves a little.", "Compare your score with the no-panel score above."]
+    },
+    "dry": {
+      "why": "The soil got too dry for {dry} sunny hours. Thirsty plants stop growing.",
+      "next": "How could the soil stay wet longer during the day?",
+      "hints": ["Where does the water go on a hot afternoon?", "Shade slows drying. The pump only runs when the panel has power left after the fan.", "Try both panels with the pump on and the fan off."]
+    },
+    "tankEmpty": {
+      "why": "The tank ran dry on day {day} at {hour}:00, then the soil dried out.",
+      "next": "How could the same water last longer?",
+      "hints": ["Where does the water go on a hot day?", "Shade slows drying, so the same water lasts longer.", "Try both panels with the pump on."]
+    },
+    "lowEnergy": {
+      "why": "Your plant did well, but your panel made only {energy}% of the energy the best setup can make.",
+      "next": "Can you make more energy and still keep the plant happy?",
+      "hints": ["Which panel catches the most sun?", "More panel area means more energy, but also more shade.", "Try both panels set high."]
+    },
+    "noPanel": {
+      "why": "Your plant grew fine in full sun, but with no panel you made no energy.",
+      "next": "What happens to the plant if you add a panel above it?",
+      "hints": ["Shade can help or hurt. It depends on the plant and the heat.", "Try a small panel first, then compare.", "Try the big panel set high."]
+    },
+    "balanced": {
+      "why": "A good balance: nothing held the plant back much, and the panel made {energy}% of the best energy.",
+      "next": "Can you raise one score without dropping the other?",
+      "hints": ["Change just one thing, then run again and compare.", "Try the other panel height, or a different panel size.", "Compare Big + high with Both + high."]
+    }
+  },
+
+  "runs": {
+    "title": "My Sun Day runs",
+    "intro": "Every run is saved here, newest first. Runs are uploaded to the project team with your log.",
+    "empty": "No runs yet. Run a day and it will show up here.",
+    "score": "Sun Score {score}",
+    "scoreDetail": "out of 200 · no panel: {fs}",
+    "design": "Design",
+    "designValue": "{crop}, {panel}",
+    "day": "Day",
+    "dayValue": "{weather}, {days}",
+    "prediction": "Prediction",
+    "guessed": "Guessed {guess}{because}. It grew {actual}.",
+    "because": " because {why}",
+    "noGuess": "No guess. It grew {actual}.",
+    "challenge": "Challenge",
+    "fanAndPump": "fan and pump",
+    "fan": "fan",
+    "pump": "pump",
+    "ran": "Ran {date}"
+  }
+}

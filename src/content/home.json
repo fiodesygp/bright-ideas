@@ -23,6 +23,11 @@
       "to": "/connect",
       "title": "Connect the Components",
       "text": "Build circuits one step at a time."
+    },
+    {
+      "to": "/sun-day",
+      "title": "Sun Day",
+      "text": "Design a panel setup, predict, and run a sunny day."
     }
   ],
   "subtitle": "Your helper for the miniAgriPV kit."

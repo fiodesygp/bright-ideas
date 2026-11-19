@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import { useLiveQuery } from 'dexie-react-hooks'
 import PageHeading from '../components/PageHeading'
 import Waves from '../components/Waves'
-import { ArrowRightIcon, BookIcon, ChartIcon, LeafIcon, PlugIcon } from '../components/Icons'
+import { ArrowRightIcon, BookIcon, ChartIcon, LeafIcon, PlugIcon, SunIcon } from '../components/Icons'
 import { home, logContent } from '../content'
 import { CURRENT_PLANT_ID, getEntries } from '../data/db'
 import { useLearners } from '../data/useLearners'
@@ -15,6 +15,7 @@ const SECTION_ICONS: Record<string, typeof LeafIcon> = {
   '/log/dashboard': ChartIcon,
   '/learn': BookIcon,
   '/connect': PlugIcon,
+  '/sun-day': SunIcon,
 }
 
 export default function Home() {

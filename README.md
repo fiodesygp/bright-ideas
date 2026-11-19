@@ -9,7 +9,7 @@ A companion web app for the **miniAgriPV kit**. 7th graders build a mini agrivol
   - iPhone or iPad (Safari): tap **Share**, then **Add to Home Screen**.
   - Android (Chrome): tap the **⋮** menu, then **Add to Home screen** (or **Install app**).
   - After that, it opens like an app and works without internet.
-- **Privacy:** everything is saved on the device first, so the app works offline. When the device is online, students' names (first name or nickname), plants, log entries and photos are also uploaded to the project team's database (participants have consented to this). There are no accounts and no tracking. The Planting Log shows whether everything has been uploaded. Students on a shared device each add their name (first name or nickname) with **Who's logging?** on the Planting Log, and each sees only their own entries, Dashboard and PDF. **Settings → Remove my name and log from this device** deletes one student's name and entries; **Settings → Clear all data** erases everything on that device. Both also remove the names, notes and photos from the team's copy the next time the device is online.
+- **Privacy:** everything is saved on the device first, so the app works offline. When the device is online, students' names (first name or nickname), plants, log entries, photos and Sun Day runs are also uploaded to the project team's database (participants have consented to this). There are no accounts and no tracking. The Planting Log shows whether everything has been uploaded. Students on a shared device each add their name (first name or nickname) with **Who's logging?** on the Planting Log, and each sees only their own entries, Dashboard and PDF. **Settings → Remove my name and log from this device** deletes one student's name, entries and Sun Day runs; **Settings → Clear all data** erases everything on that device. Both also remove the names, notes and photos from the team's copy (and mark the runs deleted) the next time the device is online.
 - **Before your first session:** check the kit facts in [FACILITATOR-CHECKLIST.md](FACILITATOR-CHECKLIST.md) against your real parts. Start with the first item: whether one panel can run the whole system.
 
 ## Features
@@ -18,12 +18,13 @@ A companion web app for the **miniAgriPV kit**. 7th graders build a mini agrivol
 2. **My Dashboard**: summary cards, checklist counts ("Watered on 3 of 5 days"), a height-over-time chart, a photo timeline, and the full entry list with edit and delete. Export it as a tagged, text-based PDF (PDF/UA) or as a PNG image.
 3. **Learn the Components**: flip cards for each kit part and four big-idea cards, plus a quick-check question on each part card (with a hint and retry, no score).
 4. **Connect the Components**: six step-by-step circuits, with one diagram and one instruction per step, then "Did it work?" and a troubleshooting checklist.
+5. **Sun Day** (`#/sun-day`, from the Home page): a simulation brought over from the Same Sun app. Students choose a plant, weather, panel size and height, and whether the fan and pump run; predict how the plant will grow compared with one in full sun, and why; run a day or a week with a moving scene and gauges; then get a Sun Score (food + energy, out of 200) with feedback, hints, and three challenges. Every run is saved under **My Sun Day runs** for the learner picked in **Who's logging?**. The numbers are estimates for learning, not measurements; every model number is in `src/sim/model.json`.
 
 Kit-specific facts (polarity, wire colors, resistor value, panel power) must be checked against the real kit. See [FACILITATOR-CHECKLIST.md](FACILITATOR-CHECKLIST.md).
 
 ## Privacy
 
-The app is local-first, with one small backend for uploads, and no accounts or analytics. Names, log entries and photos are stored in the browser's IndexedDB, and settings (including who is logging now) are kept in localStorage. In the background, the app uploads learners, entries and photos to the project team's Supabase database through `api/sync.ts`, a Vercel Function (see [Upload sync](#upload-sync)). The browser never holds a Supabase key. Each entry stores the learner's id, not their name, so renaming updates everywhere. Entries saved before names existed go to the first learner added on that device. **Settings → Remove my name and log from this device** deletes the current learner and only their entries; **Settings → Clear all data** removes everything. In Supabase, deletes are soft: the row stays with `deleted_at` set, its name, plant or note is blanked, and its photo is deleted.
+The app is local-first, with one small backend for uploads, and no accounts or analytics. Names, log entries and photos are stored in the browser's IndexedDB, and settings (including who is logging now) are kept in localStorage. In the background, the app uploads learners, entries, photos and Sun Day runs to the project team's Supabase database through `api/sync.ts`, a Vercel Function (see [Upload sync](#upload-sync)). The browser never holds a Supabase key. Each entry stores the learner's id, not their name, so renaming updates everywhere. Entries saved before names existed go to the first learner added on that device. **Settings → Remove my name and log from this device** deletes the current learner and only their entries and Sun Day runs; **Settings → Clear all data** removes everything. In Supabase, deletes are soft: the row stays with `deleted_at` set, its name, plant or note is blanked, and its photo is deleted. Sun Day runs hold no free text, only choices and scores, so they are just marked deleted.
 
 ## Editing content (no code changes needed)
 
@@ -33,6 +34,7 @@ Most learner-facing text lives in `src/content/` (the rest of the Settings page 
 |---|---|
 | `home.json` | Driving question and Home links |
 | `log.json` | Log form labels and checklist, "About my log" and "Who's logging?", announcements, Dashboard intro and counts, PDF labels, and the empty-state text. `{name}`-style slots are filled in by the app |
+| `sunday.json` | All Sun Day text: steps, choices, gauges, prediction, results, feedback rules and hints, challenges, and "My Sun Day runs" |
 | `settings.json` | Settings text about learners: "Remove my name and log", its confirmation, the Clear all data warning, and the shared-device facilitator note |
 | `components.json` | Part cards (with quick checks) and concept cards |
 | `circuits.json` | Circuits: parts, wires, steps, success text, troubleshooting |
@@ -58,6 +60,7 @@ A step with `"wire": "w2"` adds and highlights that wire. A step with `highlight
 npm install
 npm run dev      # http://localhost:5173/bright-ideas/
 npm run build    # type-check and build to dist/
+npm test         # Sun Day model unit tests (Node's built-in test runner, no extra packages)
 npm run lint
 ```
 
@@ -67,10 +70,11 @@ Stack: React, TypeScript, Vite, React Router (HashRouter, so refreshes work on G
 
 ### Optional browser checks
 
-`scripts/checks/` has Playwright scripts for the Planting Log and the upload sync. They are not part of the build or CI, and Playwright is not a project dependency: `npx` downloads the pinned versions into a temporary folder.
+`scripts/checks/` has Playwright scripts for the Planting Log, Sun Day and the upload sync. They are not part of the build or CI, and Playwright is not a project dependency: `npx` downloads the pinned versions into a temporary folder.
 
 - `logform.mjs` checks the Log form at 360, 768 and 1280 px in light and dark mode, with and without a photo, and with old entries already saved. It covers field order, the "Photo added", "Photo removed" and "Saved" announcements, focus, axe (WCAG 2.2 AA), 44 px targets, sideways scrolling, and reduced motion.
 - `edit.mjs` checks editing an entry on the Dashboard: field order, checklist ticks, Remove photo, the "Changes saved" announcement, and focus returning to the Edit button.
+- `sunday.mjs` checks Sun Day: the name prompt on a fresh device, choosing a design (keyboard too), predicting, running the day (announcements, focus on Skip, then on the Sun Score), hints, a challenge with locked choices, reduced motion, "My Sun Day runs" (newest first, per learner), the upload to the local test server, and axe in light and dark at 320 and 1280 px. It needs the same build as `sync.mjs` (below).
 - `learners.mjs` checks "About my log" and shared devices at the same sizes and themes: a fresh device, two learners with their own entries, switching ("Switched to …'s log"), renaming, the Dashboard checklist counts, deleting a learner, Settings → Remove my name and log, and old entries going to the first learner.
 
 With the dev server running (`npm run dev`), in a second terminal:
@@ -82,16 +86,17 @@ npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/e
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/learners.mjs
 ```
 
-These three answer the upload endpoint with "ok" themselves. `sync.mjs` checks the real sync instead, against a fake Supabase (`sync-server.mjs`, in memory) and `api/sync.ts` itself on port 5180. It covers backfill of data saved by the previous version, the device id, offline save then upload on reconnect, edits (the photo is uploaded again only when it changed), entry and learner deletes, Clear all data, the status line and its announcements, and the endpoint's checks on what it accepts. It needs a build that posts to that port, served on port 5173:
+These three answer the upload endpoint with "ok" themselves. `sync.mjs` checks the real sync instead, against a fake Supabase (`sync-server.mjs`, in memory) and `api/sync.ts` itself on port 5180. It covers backfill of data saved by earlier versions (v1, v2, and v3 with records still queued), the device id, Sun Day run uploads and deletes, offline save then upload on reconnect, edits (the photo is uploaded again only when it changed), entry and learner deletes, Clear all data, the status line and its announcements, and the endpoint's checks on what it accepts. It needs a build that posts to that port, served on port 5173:
 
 ```sh
 VITE_SYNC_URL=http://localhost:5180/api/sync npm run build
 npx vite preview --port 5173 --strictPort
 # second terminal
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/sync.mjs
+npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/sunday.mjs
 ```
 
-Each script prints PASS or FAIL per check and ends with `ALL PASSED` or the number that failed, and exits non-zero on any failure. To test another server, pass its URL, for example `… node scripts/checks/logform.mjs http://localhost:4173/bright-ideas/`. `logform.mjs` and `learners.mjs` save screenshots to `bright-ideas-checks` in your system temp folder; set `SHOTS_DIR` to put them somewhere else. Don't commit them. `scripts/checks/shots/` is git-ignored if you want them next to the scripts.
+Each script prints PASS or FAIL per check and ends with `ALL PASSED` or the number that failed, and exits non-zero on any failure. To test another server, pass its URL, for example `… node scripts/checks/logform.mjs http://localhost:4173/bright-ideas/`. `logform.mjs`, `learners.mjs` and `sunday.mjs` save screenshots to `bright-ideas-checks` in your system temp folder; set `SHOTS_DIR` to put them somewhere else. Don't commit them. `scripts/checks/shots/` is git-ignored if you want them next to the scripts.
 
 ## Design tokens
 
@@ -122,22 +127,23 @@ Install veraPDF from https://docs.verapdf.org/install/. You can also open any ex
 
 The app saves everything on the device first. `src/data/sync.ts` then uploads it in the background to `api/sync.ts`, a Vercel Function that writes to Supabase with the secret key. The browser never talks to Supabase and never holds a key.
 
-- **What's sent:** learners (name, plant, start date), entries (date, height, checklist, note, photo), and deletions. Each record is filed under a random device id (`bright-ideas:deviceId` in localStorage, with a copy in IndexedDB) and its local id.
+- **What's sent:** learners (name, plant, start date), entries (date, height, checklist, note, photo), Sun Day runs (the design, challenge, prediction and reason, how the plant really grew, and the scores), and deletions. Each record is filed under a random device id (`bright-ideas:deviceId` in localStorage, with a copy in IndexedDB) and its local id.
 - **When:** at start, about 1.5 s after any change, when the device comes back online, and when the app is shown again. A failed upload stays queued and is retried with backoff (5 s, doubling, up to 5 min). Saving never waits for it.
-- **Bookkeeping:** Dexie hooks mark every new or changed learner and entry `dirty` (and `photoDirty` when the photo changed), and every delete writes a tombstone. `dirty` is cleared only after the server confirms. The version 3 upgrade marks everything already on a device as dirty, so it is uploaded once ("backfill").
-- **Requests:** text records go in batches of 50 as JSON. Each photo goes alone as `image/jpeg` (`?device=…&entry=…`), so requests stay under Vercel's 4.5 MB limit.
-- **What the endpoint accepts:** cross-origin calls only from the Vercel site, GitHub Pages and `http://localhost:5173` (same-origin calls from any Vercel deployment, including previews, also work). It rejects unknown fields, checks every field's type and length (notes up to 1000 characters, names up to 30), and accepts only JPEG photos up to 2 MB. It has no login, so anyone who copies the app's requests could still send junk: review the data with that in mind. It also allows 60 requests per minute per IP (set `SYNC_RATE_LIMIT_PER_MINUTE` to change it) and answers 429 with `Retry-After` beyond that; the app just waits that long and tries again. The count lives in each function instance's memory, so it is best effort: Vercel may run several instances, and a cold start resets it. A whole class behind one school IP shares the limit, so the start of a lesson may upload a little later.
-- **Deletes** are soft: `deleted_at` is set, the learner's name and plant or the entry's note are blanked, and the photo file is deleted.
-- **Status:** the Planting Log shows "All entries uploaded", "N waiting to upload" or "Offline — will upload later", and announces a change once it has lasted 2 s.
+- **Bookkeeping:** Dexie hooks mark every new or changed learner, entry and Sun Day run `dirty` (and `photoDirty` when the photo changed), and every delete writes a tombstone. `dirty` is cleared only after the server confirms. The version 3 upgrade marks everything already on a device as dirty, so it is uploaded once ("backfill"). Version 4 only adds the `sunDayRuns` table and leaves the rest, including anything still waiting to upload, as it was.
+- **Requests:** learners, then photos, then entries, then Sun Day runs, then deletions. Text records go in batches of 50 as JSON. Each photo goes alone as `image/jpeg` (`?device=…&entry=…`), so requests stay under Vercel's 4.5 MB limit.
+- **What the endpoint accepts:** cross-origin calls only from the Vercel site, GitHub Pages and `http://localhost:5173` (same-origin calls from any Vercel deployment, including previews, also work). It rejects unknown fields, checks every field's type and length (notes up to 1000 characters, names up to 30), and accepts only JPEG photos up to 2 MB. A Sun Day run must use a plant, weather, panel and challenge from `src/sim/model.json`, a known height, guess and reason, and whole-number scores in range (food, energy and the no-panel score 0–100, Sun Score 0–200). Uploads from older app versions, which never send runs, are accepted as before. It has no login, so anyone who copies the app's requests could still send junk: review the data with that in mind. It also allows 60 requests per minute per IP (set `SYNC_RATE_LIMIT_PER_MINUTE` to change it) and answers 429 with `Retry-After` beyond that; the app just waits that long and tries again. The count lives in each function instance's memory, so it is best effort: Vercel may run several instances, and a cold start resets it. A whole class behind one school IP shares the limit, so the start of a lesson may upload a little later.
+- **Deletes** are soft: `deleted_at` is set, the learner's name and plant or the entry's note are blanked, and the photo file is deleted. A deleted Sun Day run only gets `deleted_at`. Deleting a learner (or Clear all data) deletes their runs too.
+- **Status:** the Planting Log shows "All entries uploaded", "N waiting to upload" (this counts Sun Day runs too) or "Offline — will upload later", and announces a change once it has lasted 2 s.
 - **Service worker:** uploads are POSTs, which Workbox never caches, and `/api/` is excluded from the offline page fallback.
 
 ### Setting up Supabase
 
-1. In the Supabase dashboard, open **SQL Editor → New query**, paste all of `supabase/schema.sql`, and click **Run**. It creates the `devices`, `learners` and `entries` tables (RLS on, no policies), the private `log-photos` bucket (JPEG, 2 MB max), and the `entries_readable` view. It's safe to run again.
+1. In the Supabase dashboard, open **SQL Editor → New query**, paste all of `supabase/schema.sql`, and click **Run**. It creates the `devices`, `learners`, `entries` and `sun_day_runs` tables (RLS on, no policies), the private `log-photos` bucket (JPEG, 2 MB max), and the `entries_readable` and `sun_day_runs_readable` views. It's safe to run again.
+   - **Already set up before Sun Day?** Run `supabase/migrations/2026-11-sun-day-runs.sql` instead. It only adds the `sun_day_runs` table and its view. Run it before the Sun Day version deploys. Until the table exists, Sun Day runs (and deletions, which are sent after them) fail and wait in the queue. Learners, entries and photos still upload.
 2. In **Project Settings → API Keys**, copy a **secret** key (`sb_secret_…`). Don't use the publishable key anywhere.
 3. In Vercel, under **Settings → Environment Variables**, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (the secret key) for Production and Preview, then redeploy. `.env.example` lists every variable.
-4. Review uploads in **Table Editor → entries_readable**. Photos are in **Storage → log-photos**, under `{device_id}/{entry local_id}.jpg`.
-5. To remove test data (for example from a preview deployment), delete the device's folder in **Storage → log-photos**, then put its id at the top of `supabase/cleanup-test-data.sql` and run it. It hard-deletes that device's rows and reports any photos still left. Supabase doesn't allow deleting Storage files from SQL, which is why the photos go first, through the dashboard.
+4. Review uploads in **Table Editor → entries_readable** and **sun_day_runs_readable**. Photos are in **Storage → log-photos**, under `{device_id}/{entry local_id}.jpg`.
+5. To remove test data (for example from a preview deployment), delete the device's folder in **Storage → log-photos**, then put its id at the top of `supabase/cleanup-test-data.sql` and run it. It hard-deletes that device's rows (Sun Day runs included) and reports any photos still left. Supabase doesn't allow deleting Storage files from SQL, which is why the photos go first, through the dashboard.
 
 `VITE_SYNC_URL` sets where the app posts. Leave it unset on Vercel: the app uses `/api/sync` on the same site. The GitHub Pages workflow sets it to `https://brightideas-agripv.vercel.app/api/sync`.
 

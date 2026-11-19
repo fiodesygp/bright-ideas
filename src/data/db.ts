@@ -1,4 +1,7 @@
 import Dexie, { type EntityTable, type Transaction } from 'dexie'
+import type { ChallengeId } from '../sim/challenges.ts'
+import type { Guess } from '../sim/feedback.ts'
+import type { Design } from '../sim/types.ts'
 
 export type HeightUnit = 'cm' | 'in'
 
@@ -41,10 +44,37 @@ export interface Learner {
   syncedAt?: number
 }
 
-/** A deleted learner or entry, kept until the sync tells the server. */
+/** The reason picked with a Sun Day prediction. */
+export type SunDayReason = 'shade' | 'light' | 'fan' | 'pump'
+
+/** One Sun Day run, saved when the day (or week) finishes. Uploaded by the sync. */
+export interface SunDayRun {
+  id: number
+  /** Who ran it ("Who's logging?") */
+  learnerId: number
+  createdAt: number
+  design: Design
+  challenge: ChallengeId | null
+  guess: Guess | null
+  why: SunDayReason | null
+  /** How the plant really grew compared with the same plant in full sun with no panel */
+  actual: Guess
+  /** Sun Score out of 200 (food + energy) */
+  score: number
+  /** Food score of the same plant with no panel, out of 100 */
+  fullSun: number
+  /** Out of 100 */
+  food: number
+  /** Out of 100 */
+  energy: number
+  dirty?: 1
+  syncedAt?: number
+}
+
+/** A deleted learner, entry or Sun Day run, kept until the sync tells the server. */
 export interface Tombstone {
   id: number
-  table: 'learners' | 'entries'
+  table: SyncTable
   localId: number
   deletedAt: number
 }
@@ -52,6 +82,7 @@ export interface Tombstone {
 export const db = new Dexie('bright-ideas') as Dexie & {
   entries: EntityTable<LogEntry, 'id'>
   learners: EntityTable<Learner, 'id'>
+  sunDayRuns: EntityTable<SunDayRun, 'id'>
   tombstones: EntityTable<Tombstone, 'id'>
   /** Small key-value store; holds a copy of the device id. */
   meta: EntityTable<{ key: string; value: string }, 'key'>
@@ -81,6 +112,12 @@ db.version(3)
     })
   })
 
+// Adds Sun Day runs. A new table only: the other tables, and the dirty and
+// syncedAt flags on records still waiting to upload, are left as they are.
+db.version(4).stores({
+  sunDayRuns: '++id, learnerId, createdAt, dirty',
+})
+
 // Set when IndexedDB was created from scratch on this visit (see device.ts).
 let created = false
 db.on('populate', () => {
@@ -94,7 +131,8 @@ export const dbWasCreated = () => created
  * transaction, so callers must include db.tombstones in it (see deleteEntry).
  */
 const SYNC_KEYS = new Set(['dirty', 'syncedAt', 'photoDirty'])
-type SyncTable = 'learners' | 'entries'
+/** The tables the sync uploads. */
+export type SyncTable = 'learners' | 'entries' | 'sunDayRuns'
 
 let editTick = 0
 const lastEdit = new Map<string, number>()
@@ -103,14 +141,14 @@ export const currentEditTick = () => editTick
 export const editedSince = (table: SyncTable, id: number, tick: number) => (lastEdit.get(`${table}:${id}`) ?? 0) > tick
 
 const changeListeners = new Set<() => void>()
-/** Called after any local change to learners or entries. */
+/** Called after any local change to learners, entries or Sun Day runs. */
 export function onLocalChange(fn: () => void) {
   changeListeners.add(fn)
   return () => changeListeners.delete(fn)
 }
 const changed = () => changeListeners.forEach((fn) => fn())
 
-for (const name of ['learners', 'entries'] as const) {
+for (const name of ['learners', 'entries', 'sunDayRuns'] as const) {
   const table = db.table(name)
   table.hook('creating', (_key, obj: LogEntry & Learner) => {
     obj.dirty = 1
@@ -179,19 +217,32 @@ export async function deleteEntry(id: number) {
   await db.transaction('rw', db.entries, db.tombstones, () => db.entries.delete(id))
 }
 
-/** Deletes a learner and only their entries. */
+/** Saves a finished Sun Day run. */
+export async function addSunDayRun(run: Omit<SunDayRun, 'id'>) {
+  return db.sunDayRuns.add(run as SunDayRun)
+}
+
+/** A learner's Sun Day runs, newest first. */
+export async function getSunDayRuns(learnerId: number) {
+  const runs = await db.sunDayRuns.where('learnerId').equals(learnerId).sortBy('createdAt')
+  return runs.reverse()
+}
+
+/** Deletes a learner and only their entries and Sun Day runs. */
 export async function deleteLearner(id: number) {
-  await db.transaction('rw', db.learners, db.entries, db.tombstones, async () => {
+  await db.transaction('rw', [db.learners, db.entries, db.sunDayRuns, db.tombstones], async () => {
     await db.entries.filter((e) => e.learnerId === id).delete()
+    await db.sunDayRuns.where('learnerId').equals(id).delete()
     await db.learners.delete(id)
   })
 }
 
-/** Deletes every learner and entry. Tombstones stay, so the server hears about it. */
+/** Deletes every learner, entry and Sun Day run. Tombstones stay, so the server hears about it. */
 export async function clearAllData() {
-  await db.transaction('rw', db.learners, db.entries, db.tombstones, async () => {
+  await db.transaction('rw', [db.learners, db.entries, db.sunDayRuns, db.tombstones], async () => {
     // Not clear(): that skips the hooks, so no tombstones would be written.
     await db.entries.toCollection().delete()
+    await db.sunDayRuns.toCollection().delete()
     await db.learners.toCollection().delete()
   })
 }

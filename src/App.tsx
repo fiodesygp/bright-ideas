@@ -9,6 +9,7 @@ import Learn from './pages/Learn'
 import Connect from './pages/Connect'
 import CircuitBuilder from './pages/CircuitBuilder'
 import Settings from './pages/Settings'
+import SunDay from './pages/SunDay'
 import NotFound from './pages/NotFound'
 
 // HashRouter keeps refreshes and deep links working on any static host, and
@@ -26,6 +27,7 @@ export default function App() {
               <Route path="learn" element={<Learn />} />
               <Route path="connect" element={<Connect />} />
               <Route path="connect/:circuitId" element={<CircuitBuilder />} />
+              <Route path="sun-day" element={<SunDay />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Route>

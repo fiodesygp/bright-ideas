@@ -2,14 +2,14 @@
   "plantNote": "Your name and plant are on the Planting Log. Use Edit there to change them.",
   "plantLink": "Go to the Planting Log",
   "removeMine": "Remove my name and log from this device",
-  "removeHelp": "Deletes {name}'s name, entries and photos from this device, and the name, notes and photos from the project team's copy. Other people's logs stay.",
+  "removeHelp": "Deletes {name}'s name, entries, photos and Sun Day runs from this device, and the name, notes and photos from the project team's copy. Other people's logs stay.",
   "removeTitle": "Delete {name}'s log?",
-  "removeText": "This deletes {name}'s name and their {count} and photos from this device. It also removes the name, notes and photos from the project team's copy. Other people's logs stay. You cannot undo this.",
+  "removeText": "This deletes {name}'s name, their {count} and photos, and their Sun Day runs from this device. It also removes the name, notes and photos from the project team's copy, and marks the runs as deleted there. Other people's logs stay. You cannot undo this.",
   "removeConfirm": "Delete",
   "removed": "{name}'s log was deleted",
-  "clearAllText": "This deletes every name, log entry and photo on this device, and the names, notes and photos in the project team's copy. It also resets your settings. You cannot undo this.",
+  "clearAllText": "This deletes every name, log entry, photo and Sun Day run on this device, and the names, notes and photos in the project team's copy. It also resets your settings. You cannot undo this.",
   "pdfTip": "Tip: save a PDF first if you want to keep a copy.",
   "facilitatorSharedDevice": "Each device saves its own logs first and uploads them to the project team when it's online. On a shared device, each student adds their name with \"Who's logging?\" on the Planting Log and sees only their own entries.",
   "privacyTitle": "Where your log goes",
-  "privacyText": "Everything you enter is saved on this device first. When you're online, your name, entries and photos are also sent to the project team, so they can see how the plants grow. There are no accounts and no tracking."
+  "privacyText": "Everything you enter is saved on this device first. When you're online, your name, entries, photos and Sun Day runs are also sent to the project team, so they can see how the plants grow and how you test your designs. There are no accounts and no tracking."
 }

@@ -5,6 +5,7 @@ import logJson from './log.json'
 import componentsJson from './components.json'
 import circuitsJson from './circuits.json'
 import settingsJson from './settings.json'
+import sundayJson from './sunday.json'
 
 export interface HomeContent {
   appName: string
@@ -169,3 +170,10 @@ export const logContent = logJson as LogContent
 export const learn = componentsJson as ComponentsContent
 export const circuitsContent = circuitsJson as CircuitsContent
 export const settingsContent = settingsJson as SettingsContent
+
+/**
+ * Text on the Sun Day page. The type follows sunday.json itself, so a key the
+ * app reads can't go missing. {name}-style slots are filled in by the app.
+ */
+export type SunDayContent = typeof sundayJson
+export const sundayContent: SunDayContent = sundayJson

@@ -6,13 +6,14 @@ Paths are written as `file → JSON path`. All content files are in `src/content
 
 ## Uploads to the project team
 
-The app saves each student's name (first name or nickname), plant, log entries and photos on the device, and uploads them to the project team's database when the device is online.
+The app saves each student's name (first name or nickname), plant, log entries, photos and Sun Day runs on the device, and uploads them to the project team's database when the device is online.
 
 - [ ] **Consent is in place** for every student who will use the app, and they know their log and photos are shared with the project team. The app says so under the name and photo fields and in Settings → "Where your log goes".
 - [ ] **Uploads arrive.** On one class device, add a test entry with a photo. The Planting Log should soon say "All entries uploaded". Ask the team to confirm it shows up, then delete the test entry.
+- [ ] **Sun Day runs arrive too.** Open Sun Day from the Home page and run one day. It appears under "My Sun Day runs" and is uploaded with the log (the team sees it in `sun_day_runs_readable`). Runs hold only the design, the prediction and the scores, no typed text.
 - [ ] **Photos: no faces or names.** The photo help says to leave them out. Remind students before the first photo.
 - [ ] **Offline is fine.** Entries made without internet show "Offline — will upload later" and upload by themselves once the device is back online. Open the app once on a connection after an offline session.
-- [ ] **Removing a student.** Settings → "Remove my name and log from this device" (or Clear all data) also removes their name, notes and photos from the team's copy, the next time the device is online.
+- [ ] **Removing a student.** Settings → "Remove my name and log from this device" (or Clear all data) also deletes their Sun Day runs, and removes their name, notes and photos from the team's copy (the runs are marked deleted there), the next time the device is online.
 
 ## Test this first: one panel running the whole system
 
