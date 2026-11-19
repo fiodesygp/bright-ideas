@@ -276,6 +276,46 @@ ok((await status(page)) === 'All entries uploaded', 'clear all: status back to "
 ok(errs.length === 0, `no page errors ${errs.join('; ')}`)
 ok(store.unknown.length === 0, `fake Supabase saw only expected calls ${store.unknown.join(', ')}`)
 
+/* ---------- Backfill: data saved by the first version (Dexie v1, entries only) ---------- */
+{
+  const v1 = await browser.newContext({ viewport: { width: 360, height: 900 } })
+  const p1 = await v1.newPage()
+  const blank1 = new URL('check-blank.html', BASE).href
+  await p1.route(blank1, (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>blank</title>' }))
+  await p1.goto(blank1)
+  const photo1 = await makePhoto(p1)
+  await p1.evaluate(async (b64) => {
+    const photo = new Blob([Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))], { type: 'image/jpeg' })
+    await new Promise((resolve, reject) => {
+      const q = indexedDB.open('bright-ideas', 10) // Dexie version 1 = IndexedDB version 10
+      q.onupgradeneeded = () => {
+        const e = q.result.createObjectStore('entries', { keyPath: 'id', autoIncrement: true })
+        e.createIndex('plantId', 'plantId'); e.createIndex('date', 'date'); e.createIndex('createdAt', 'createdAt')
+        e.createIndex('[plantId+date]', ['plantId', 'date'])
+      }
+      q.onsuccess = () => {
+        const tx = q.result.transaction('entries', 'readwrite')
+        // The first version's full entry shape.
+        tx.objectStore('entries').add({ plantId: 1, date: '2026-09-20', createdAt: Date.parse('2026-09-20T10:00:00Z'), height: 1.5, heightUnit: 'cm', heightCm: 1.5, leafCount: 2, leafColor: 'green', soil: 'damp', watered: true, weather: 'sunny', shade: '', note: 'v1 entry', promptId: '', promptText: '', reflection: '', photo })
+        tx.objectStore('entries').add({ plantId: 1, date: '2026-09-22', createdAt: Date.parse('2026-09-22T10:00:00Z'), height: 2, heightUnit: 'cm', heightCm: 2, leafCount: null, leafColor: '', soil: '', watered: null, weather: '', shade: '', note: '', promptId: '', promptText: '', reflection: '' })
+        tx.oncomplete = () => { q.result.close(); resolve() }
+        tx.onerror = reject
+      }
+      q.onerror = reject
+    })
+  }, photo1.buffer.toString('base64'))
+  await p1.goto(BASE + '#/log')
+  await p1.waitForSelector('form.about-form')
+  const dev1 = await p1.evaluate(() => localStorage.getItem('bright-ideas:deviceId'))
+  ok(await until(() => rows('entries', dev1).length === 2), 'v1 backfill: both first-version entries uploaded before anyone adds a name')
+  const first = store.entries.get(`${dev1}/1`)
+  ok(first?.watered === true && first.note === 'v1 entry' && first.learner_local_id === null && store.photos.has(`${dev1}/1.jpg`), 'v1 backfill: fields and photo arrive, no learner yet')
+  // Adding the first learner adopts them; the change is uploaded too.
+  await startLog(p1, 'Vic')
+  ok(await until(() => rows('entries', dev1).every((e) => e.learner_local_id === 1) && rows('learners', dev1)[0]?.name === 'Vic'), 'v1 backfill: entries re-uploaded with the first learner after adoption')
+  await v1.close()
+}
+
 /* ---------- Status line in dark mode ---------- */
 const dark = await browser.newContext({ viewport: { width: 360, height: 900 }, colorScheme: 'dark' })
 const dp = await dark.newPage()
