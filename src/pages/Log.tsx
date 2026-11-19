@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { PageHeader } from '../components/PageHeading'
 import LearnerBar from '../components/log/LearnerBar'
 import LogForm from '../components/log/LogForm'
+import SyncStatus from '../components/log/SyncStatus'
 import EntryCard from '../components/log/EntryCard'
 import { ArrowRightIcon, ChartIcon } from '../components/Icons'
 import { CURRENT_PLANT_ID, getEntries } from '../data/db'
@@ -25,6 +26,7 @@ export default function Log() {
       <PageHeader title="Planting Log" />
 
       <LearnerBar />
+      <SyncStatus />
 
       {current && (
         <>

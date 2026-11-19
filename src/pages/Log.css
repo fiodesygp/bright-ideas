@@ -95,3 +95,16 @@ button.entry-thumb { cursor: zoom-in; }
   font-size: 0.9rem;
   font-weight: 700;
 }
+
+/* Upload status: small, quiet, text first. */
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -8px 0 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.sync-status svg { flex: none; }
+.sync-done svg { color: var(--primary); }

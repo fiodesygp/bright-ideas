@@ -7,7 +7,7 @@
 // usage: see README, "Optional browser checks"
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
-import { APP_URL as BASE, AxeBuilder, SHOTS_DIR, chromium, makePhoto, startLog } from './deps.mjs'
+import { APP_URL as BASE, AxeBuilder, SHOTS_DIR, launchWithSync, makePhoto, startLog } from './deps.mjs'
 
 const SHOTS = SHOTS_DIR + path.sep
 mkdirSync(SHOTS, { recursive: true })
@@ -52,7 +52,7 @@ async function checkLayout(page, label) {
   ok(small.length === 0, `${label} targets ≥44px ${small.join(', ')}`)
 }
 
-const browser = await chromium.launch()
+const browser = await launchWithSync()
 for (const scheme of ['light', 'dark']) {
   for (const w of [360, 768, 1280]) {
     const tag = `${scheme}-${w}`

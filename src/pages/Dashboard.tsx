@@ -11,7 +11,7 @@ import EntryCard from '../components/log/EntryCard'
 import LearnerBar from '../components/log/LearnerBar'
 import { ArrowLeftIcon, LeafIcon, SoilIcon, WaterIcon } from '../components/Icons'
 import { logContent } from '../content'
-import { CURRENT_PLANT_ID, db, getEntries, type HeightUnit, type LogEntry } from '../data/db'
+import { CURRENT_PLANT_ID, deleteEntry, getEntries, type HeightUnit, type LogEntry } from '../data/db'
 import { useSettings } from '../data/settings'
 import { useLearners } from '../data/useLearners'
 import { formatDate } from '../lib/dates'
@@ -124,7 +124,7 @@ export default function Dashboard() {
         confirmLabel="Delete"
         onCancel={() => setToDelete(null)}
         onConfirm={async () => {
-          if (toDelete) await db.entries.delete(toDelete.id)
+          if (toDelete) await deleteEntry(toDelete.id)
           setToDelete(null)
           document.getElementById('all-title')?.focus()
         }}

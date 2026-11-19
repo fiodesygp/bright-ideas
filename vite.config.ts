@@ -5,10 +5,13 @@ import { VitePWA } from 'vite-plugin-pwa'
 // GitHub Pages serves the app from https://fiodesygp.github.io/bright-ideas/,
 // Vercel from the domain root. Vercel sets VERCEL=1 during its builds.
 const base = process.env.VERCEL ? '/' : '/bright-ideas/'
+// Sent with each upload so the team can tell builds apart.
+const appVersion = (process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? 'dev').slice(0, 7)
 
 // https://vite.dev/config/
 export default defineConfig({
   base,
+  define: { __APP_VERSION__: JSON.stringify(appVersion) },
   // Export libraries load lazily; pre-bundle them so dev doesn't reload mid-export.
   optimizeDeps: { include: ['html-to-image', 'pdfkit', 'pdfkit/output'] },
   plugins: [
@@ -38,6 +41,10 @@ export default defineConfig({
         // woff files are the PDF fonts; woff2 are the page fonts.
         globPatterns: ['**/*.{js,css,html,svg,png,webp,woff,woff2}'],
         navigateFallback: `${base}index.html`,
+        // Never answer the sync endpoint from the service worker. Uploads are
+        // POSTs, which Workbox doesn't cache, and no runtime route matches them,
+        // so they always go straight to the network.
+        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],

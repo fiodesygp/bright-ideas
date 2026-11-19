@@ -8,7 +8,7 @@
 // usage: see README, "Optional browser checks"
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
-import { APP_URL as BASE, AxeBuilder, SHOTS_DIR, chromium, startLog } from './deps.mjs'
+import { APP_URL as BASE, AxeBuilder, SHOTS_DIR, launchWithSync, startLog } from './deps.mjs'
 
 const SHOTS = SHOTS_DIR + path.sep
 mkdirSync(SHOTS, { recursive: true })
@@ -53,7 +53,7 @@ async function addEntry(page, height, { soil = false, water = false, date } = {}
   await page.waitForTimeout(600)
 }
 
-const browser = await chromium.launch()
+const browser = await launchWithSync()
 for (const scheme of ['light', 'dark']) {
   for (const w of [360, 768, 1280]) {
     const tag = `${scheme}-${w}`
@@ -72,7 +72,7 @@ for (const scheme of ['light', 'dark']) {
     const nameBox = page.getByLabel('My name')
     ok((await page.getByLabel('Start date (optional)').inputValue()) === today(), `${tag} start date defaults to today`)
     ok((await nameBox.getAttribute('aria-describedby'))?.split(' ').length === 1 &&
-      (await page.locator(`#${(await nameBox.getAttribute('aria-describedby')).split(' ')[0]}`).innerText()) === 'Use your first name or a nickname. It stays on this device.', `${tag} name hint is linked to the field`)
+      (await page.locator(`#${(await nameBox.getAttribute('aria-describedby')).split(' ')[0]}`).innerText()) === "Use your first name or a nickname. It's saved on this device and sent to the project team with your log.", `${tag} name hint is linked to the field`)
     await page.screenshot({ path: `${SHOTS}${tag}-about-1-fresh.png`, fullPage: true })
     await axe(page, `${tag} fresh About card`)
     await checkLayout(page, `${tag} fresh About card`)

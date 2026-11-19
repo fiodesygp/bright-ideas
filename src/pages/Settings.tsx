@@ -87,11 +87,8 @@ export default function Settings() {
       </section>
 
       <section className="card stack section" aria-labelledby="privacy-title">
-        <h2 id="privacy-title" tabIndex={-1}>Your data stays here</h2>
-        <p>
-          Everything you enter stays on this device. Nothing is sent over the internet. There are no accounts and no
-          tracking.
-        </p>
+        <h2 id="privacy-title" tabIndex={-1}>{text.privacyTitle}</h2>
+        <p>{text.privacyText}</p>
         <p>
           You have <strong>{count ?? 0}</strong> log {count === 1 ? 'entry' : 'entries'} saved.
         </p>

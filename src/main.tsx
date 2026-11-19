@@ -4,9 +4,12 @@ import '@fontsource/encode-sans/latin-400.css'
 import '@fontsource/encode-sans/latin-700.css'
 import './index.css'
 import App from './App'
+import { startSync } from './data/sync'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
   </StrictMode>,
 )
+
+startSync()

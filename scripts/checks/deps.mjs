@@ -59,3 +59,18 @@ export async function startLog(page, name = 'Maya', plant = 'Basil') {
   await page.getByRole('button', { name: 'Start my log' }).click()
   await page.locator('.learner-bar').waitFor()
 }
+
+/**
+ * Chromium for the Log checks. Each new context answers the upload sync with
+ * "ok", as a working endpoint would; sync.mjs tests the real thing.
+ */
+export async function launchWithSync() {
+  const browser = await chromium.launch()
+  const newContext = browser.newContext.bind(browser)
+  browser.newContext = async (options) => {
+    const ctx = await newContext(options)
+    await ctx.route('**/api/sync**', (route) => route.fulfill({ status: 200, json: { ok: true } }))
+    return ctx
+  }
+  return browser
+}

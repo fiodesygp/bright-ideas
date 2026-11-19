@@ -140,17 +140,19 @@ export default function LogForm({ entry, learnerId, onDone, onSaved }: Props) {
       heightUnit: unit,
       heightCm: toCm(height, unit),
       note: form.note.trim(),
-      photo: form.photo ?? undefined,
       soilChecked: form.soilChecked,
       watered: form.watered,
     }
+    const photo = { photo: form.photo ?? undefined }
     if (entry) {
-      await db.entries.update(entry.id, { ...data, updatedAt: Date.now() })
+      // Leave the photo out when it wasn't changed, so the sync doesn't upload it again.
+      const photoChanged = form.photo !== (entry.photo ?? null)
+      await db.entries.update(entry.id, { ...data, ...(photoChanged && photo), updatedAt: Date.now() })
       announce(say.changesSaved)
       onDone?.()
       return
     }
-    const newId = await db.entries.add({ ...data, plantId: CURRENT_PLANT_ID, learnerId, createdAt: Date.now() })
+    const newId = await db.entries.add({ ...data, ...photo, plantId: CURRENT_PLANT_ID, learnerId, createdAt: Date.now() })
     setForm(EMPTY(form.date))
     setStatus('saved')
     announce(say.saved)
