@@ -43,15 +43,17 @@ export interface LogContent {
   actions: Record<'saveChanges' | 'cancel' | 'delete', string>
   /** "1 entry", "3 entries" */
   count: Record<'entry' | 'entries', string>
+  /** Upload status on the Planting Log. {n} is filled in by the app. */
+  sync: Record<'done' | 'waiting' | 'offline', string>
   dashboardIntro: string
   emptyTitle: string
   emptyText: string
 }
 
-/** Text on the Settings page. Only the parts about learners live here so far. {name} and {count} are filled in by the app. */
+/** Text on the Settings page. Only the parts about learners and privacy live here so far. {name} and {count} are filled in by the app. */
 export type SettingsContent = Record<
   | 'plantNote' | 'plantLink' | 'removeMine' | 'removeHelp' | 'removeTitle' | 'removeText' | 'removeConfirm' | 'removed'
-  | 'clearAllText' | 'pdfTip' | 'facilitatorSharedDevice',
+  | 'clearAllText' | 'pdfTip' | 'facilitatorSharedDevice' | 'privacyTitle' | 'privacyText',
   string
 >
 

@@ -4,6 +4,16 @@ The app makes specific claims about the miniAgriPV kit. Before students use it, 
 
 Paths are written as `file → JSON path`. All content files are in `src/content/`.
 
+## Uploads to the project team
+
+The app saves each student's name (first name or nickname), plant, log entries and photos on the device, and uploads them to the project team's database when the device is online.
+
+- [ ] **Consent is in place** for every student who will use the app, and they know their log and photos are shared with the project team. The app says so under the name and photo fields and in Settings → "Where your log goes".
+- [ ] **Uploads arrive.** On one class device, add a test entry with a photo. The Planting Log should soon say "All entries uploaded". Ask the team to confirm it shows up, then delete the test entry.
+- [ ] **Photos: no faces or names.** The photo help says to leave them out. Remind students before the first photo.
+- [ ] **Offline is fine.** Entries made without internet show "Offline — will upload later" and upload by themselves once the device is back online. Open the app once on a connection after an offline session.
+- [ ] **Removing a student.** Settings → "Remove my name and log from this device" (or Clear all data) also removes their name, notes and photos from the team's copy, the next time the device is online.
+
 ## Test this first: one panel running the whole system
 
 - [ ] **One panel can run the LED, fan, and pump at the same time (Circuit 6).** This is the claim most likely to fail. Build Circuit 6 with one panel in ordinary classroom sun (not just bright noon sun) and check that all three parts work together.

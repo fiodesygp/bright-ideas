@@ -9,7 +9,7 @@ A companion web app for the **miniAgriPV kit**. 7th graders build a mini agrivol
   - iPhone or iPad (Safari): tap **Share**, then **Add to Home Screen**.
   - Android (Chrome): tap the **⋮** menu, then **Add to Home screen** (or **Install app**).
   - After that, it opens like an app and works without internet.
-- **Privacy:** all data stays on the device. Log entries and photos are saved in the browser on that phone or tablet. Nothing is sent anywhere, and there are no accounts or tracking. Students on a shared device each add their name (first name or nickname) with **Who's logging?** on the Planting Log, and each sees only their own entries, Dashboard and PDF. **Settings → Remove my name and log from this device** deletes one student's name and entries; **Settings → Clear all data** erases everything on that device.
+- **Privacy:** everything is saved on the device first, so the app works offline. When the device is online, students' names (first name or nickname), plants, log entries and photos are also uploaded to the project team's database (participants have consented to this). There are no accounts and no tracking. The Planting Log shows whether everything has been uploaded. Students on a shared device each add their name (first name or nickname) with **Who's logging?** on the Planting Log, and each sees only their own entries, Dashboard and PDF. **Settings → Remove my name and log from this device** deletes one student's name and entries; **Settings → Clear all data** erases everything on that device. Both also remove the names, notes and photos from the team's copy the next time the device is online.
 - **Before your first session:** check the kit facts in [FACILITATOR-CHECKLIST.md](FACILITATOR-CHECKLIST.md) against your real parts. Start with the first item: whether one panel can run the whole system.
 
 ## Features
@@ -23,7 +23,7 @@ Kit-specific facts (polarity, wire colors, resistor value, panel power) must be 
 
 ## Privacy
 
-There is no backend, no accounts and no analytics. Names, log entries and photos are stored in the browser's IndexedDB, and settings (including who is logging now) are kept in localStorage. Each entry stores the learner's id, not their name, so renaming updates everywhere. Entries saved before names existed go to the first learner added on that device. **Settings → Remove my name and log from this device** deletes the current learner and only their entries; **Settings → Clear all data** removes everything.
+The app is local-first, with one small backend for uploads, and no accounts or analytics. Names, log entries and photos are stored in the browser's IndexedDB, and settings (including who is logging now) are kept in localStorage. In the background, the app uploads learners, entries and photos to the project team's Supabase database through `api/sync.ts`, a Vercel Function (see [Upload sync](#upload-sync)). The browser never holds a Supabase key. Each entry stores the learner's id, not their name, so renaming updates everywhere. Entries saved before names existed go to the first learner added on that device. **Settings → Remove my name and log from this device** deletes the current learner and only their entries; **Settings → Clear all data** removes everything. In Supabase, deletes are soft: the row stays with `deleted_at` set, its name, plant or note is blanked, and its photo is deleted.
 
 ## Editing content (no code changes needed)
 
@@ -61,13 +61,13 @@ npm run build    # type-check and build to dist/
 npm run lint
 ```
 
-Stack: React, TypeScript, Vite, React Router (HashRouter, so refreshes work on GitHub Pages), Dexie (IndexedDB), vite-plugin-pwa (offline), PDFKit (tagged PDF export), and html-to-image (PNG export). Encode Sans is self-hosted through `@fontsource`, so the app makes no font requests and works offline.
+Stack: React, TypeScript, Vite, React Router (HashRouter, so refreshes work on GitHub Pages), Dexie (IndexedDB), a Vercel Function with `@supabase/supabase-js` for uploads, vite-plugin-pwa (offline), PDFKit (tagged PDF export), and html-to-image (PNG export). Encode Sans is self-hosted through `@fontsource`, so the app makes no font requests and works offline.
 
 **Before committing a change to the Log form, the Dashboard or the PDF export**, run the sample export and veraPDF locally, as described in [By hand with veraPDF](#checking-pdf-accessibility) below. `scripts/pdf-sample.mjs` fills in the real Log form, so a renamed label or message can break it, and CI only finds out after the push.
 
 ### Optional browser checks
 
-`scripts/checks/` has two Playwright scripts for the Planting Log. They are not part of the build or CI, and Playwright is not a project dependency: `npx` downloads the pinned versions into a temporary folder.
+`scripts/checks/` has Playwright scripts for the Planting Log and the upload sync. They are not part of the build or CI, and Playwright is not a project dependency: `npx` downloads the pinned versions into a temporary folder.
 
 - `logform.mjs` checks the Log form at 360, 768 and 1280 px in light and dark mode, with and without a photo, and with old entries already saved. It covers field order, the "Photo added", "Photo removed" and "Saved" announcements, focus, axe (WCAG 2.2 AA), 44 px targets, sideways scrolling, and reduced motion.
 - `edit.mjs` checks editing an entry on the Dashboard: field order, checklist ticks, Remove photo, the "Changes saved" announcement, and focus returning to the Edit button.
@@ -80,6 +80,15 @@ npx -y playwright@1.64.1 install chromium   # once, downloads the browser
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/logform.mjs
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/edit.mjs
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/learners.mjs
+```
+
+These three answer the upload endpoint with "ok" themselves. `sync.mjs` checks the real sync instead, against a fake Supabase (`sync-server.mjs`, in memory) and `api/sync.ts` itself on port 5180. It covers backfill of data saved by the previous version, the device id, offline save then upload on reconnect, edits (the photo is uploaded again only when it changed), entry and learner deletes, Clear all data, the status line and its announcements, and the endpoint's checks on what it accepts. It needs a build that posts to that port, served on port 5173:
+
+```sh
+VITE_SYNC_URL=http://localhost:5180/api/sync npm run build
+npx vite preview --port 5173 --strictPort
+# second terminal
+npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/sync.mjs
 ```
 
 Each script prints PASS or FAIL per check and ends with `ALL PASSED` or the number that failed, and exits non-zero on any failure. To test another server, pass its URL, for example `… node scripts/checks/logform.mjs http://localhost:4173/bright-ideas/`. `logform.mjs` and `learners.mjs` save screenshots to `bright-ideas-checks` in your system temp folder; set `SHOTS_DIR` to put them somewhere else. Don't commit them. `scripts/checks/shots/` is git-ignored if you want them next to the scripts.
@@ -109,6 +118,29 @@ Install veraPDF from https://docs.verapdf.org/install/. You can also open any ex
 
 **By hand with PAC** (Windows): download the free [PAC (PDF Accessibility Checker)](https://pac.pdf-accessibility.org) and open an exported PDF. PAC checks PDF/UA and the Matterhorn Protocol, and its "Screen reader preview" shows the reading order. Some PAC checkpoints need a human to judge them, for example whether the alt text is meaningful. Review those by hand.
 
+## Upload sync
+
+The app saves everything on the device first. `src/data/sync.ts` then uploads it in the background to `api/sync.ts`, a Vercel Function that writes to Supabase with the secret key. The browser never talks to Supabase and never holds a key.
+
+- **What's sent:** learners (name, plant, start date), entries (date, height, checklist, note, photo), and deletions. Each record is filed under a random device id (`bright-ideas:deviceId` in localStorage, with a copy in IndexedDB) and its local id.
+- **When:** at start, about 1.5 s after any change, when the device comes back online, and when the app is shown again. A failed upload stays queued and is retried with backoff (5 s, doubling, up to 5 min). Saving never waits for it.
+- **Bookkeeping:** Dexie hooks mark every new or changed learner and entry `dirty` (and `photoDirty` when the photo changed), and every delete writes a tombstone. `dirty` is cleared only after the server confirms. The version 3 upgrade marks everything already on a device as dirty, so it is uploaded once ("backfill").
+- **Requests:** text records go in batches of 50 as JSON. Each photo goes alone as `image/jpeg` (`?device=…&entry=…`), so requests stay under Vercel's 4.5 MB limit.
+- **What the endpoint accepts:** cross-origin calls only from the Vercel site, GitHub Pages and `http://localhost:5173` (same-origin calls from any Vercel deployment, including previews, also work). It rejects unknown fields, checks every field's type and length (notes up to 1000 characters, names up to 30), and accepts only JPEG photos up to 2 MB. It has no login, so anyone who copies the app's requests could still send junk: review the data with that in mind. It also allows 60 requests per minute per IP (set `SYNC_RATE_LIMIT_PER_MINUTE` to change it) and answers 429 with `Retry-After` beyond that; the app just waits that long and tries again. The count lives in each function instance's memory, so it is best effort: Vercel may run several instances, and a cold start resets it. A whole class behind one school IP shares the limit, so the start of a lesson may upload a little later.
+- **Deletes** are soft: `deleted_at` is set, the learner's name and plant or the entry's note are blanked, and the photo file is deleted.
+- **Status:** the Planting Log shows "All entries uploaded", "N waiting to upload" or "Offline — will upload later", and announces a change once it has lasted 2 s.
+- **Service worker:** uploads are POSTs, which Workbox never caches, and `/api/` is excluded from the offline page fallback.
+
+### Setting up Supabase
+
+1. In the Supabase dashboard, open **SQL Editor → New query**, paste all of `supabase/schema.sql`, and click **Run**. It creates the `devices`, `learners` and `entries` tables (RLS on, no policies), the private `log-photos` bucket (JPEG, 2 MB max), and the `entries_readable` view. It's safe to run again.
+2. In **Project Settings → API Keys**, copy a **secret** key (`sb_secret_…`). Don't use the publishable key anywhere.
+3. In Vercel, under **Settings → Environment Variables**, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (the secret key) for Production and Preview, then redeploy. `.env.example` lists every variable.
+4. Review uploads in **Table Editor → entries_readable**. Photos are in **Storage → log-photos**, under `{device_id}/{entry local_id}.jpg`.
+5. To remove test data (for example from a preview deployment), delete the device's folder in **Storage → log-photos**, then put its id at the top of `supabase/cleanup-test-data.sql` and run it. It hard-deletes that device's rows and reports any photos still left. Supabase doesn't allow deleting Storage files from SQL, which is why the photos go first, through the dashboard.
+
+`VITE_SYNC_URL` sets where the app posts. Leave it unset on Vercel: the app uses `/api/sync` on the same site. The GitHub Pages workflow sets it to `https://brightideas-agripv.vercel.app/api/sync`.
+
 ## Deploying
 
 The same code deploys to two places. Only the base path differs, and `vite.config.ts` picks it automatically.
@@ -120,9 +152,9 @@ The same code deploys to two places. Only the base path differs, and `vite.confi
 
 The base also sets the PWA's `scope`, `start_url`, and offline fallback. The app uses `HashRouter`: routes live after the `#` (for example `…/#/log/dashboard`), so the router needs no basename and neither host needs rewrite rules. That's why there is no `vercel.json`.
 
-**GitHub Pages** (https://fiodesygp.github.io/bright-ideas/). Pushing to `main` runs `.github/workflows/deploy.yml`, which builds the app and deploys it. In the repo settings, Pages → Source must be set to **GitHub Actions**. The PDF/UA check runs as a separate workflow, so it never blocks a deploy.
+**GitHub Pages** (https://fiodesygp.github.io/bright-ideas/). Pushing to `main` runs `.github/workflows/deploy.yml`, which builds the app (with `VITE_SYNC_URL` pointing at the Vercel endpoint, since Pages has no server) and deploys it. In the repo settings, Pages → Source must be set to **GitHub Actions**. The PDF/UA check runs as a separate workflow, so it never blocks a deploy.
 
-**Vercel** (https://brightideas-agripv.vercel.app). Import the repo in Vercel and keep the detected Vite preset: build command `npm run build`, output directory `dist`. Vercel sets `VERCEL=1` during its builds, which switches the base to `/`. Vercel then redeploys on every push to `main`.
+**Vercel** (https://brightideas-agripv.vercel.app). Import the repo in Vercel and keep the detected Vite preset: build command `npm run build`, output directory `dist`. Vercel sets `VERCEL=1` during its builds, which switches the base to `/`. Vercel then redeploys on every push to `main`, and makes a preview deployment for other branches. It also deploys `api/sync.ts` as a function; set its environment variables as described in [Setting up Supabase](#setting-up-supabase).
 
 To check a build locally:
 

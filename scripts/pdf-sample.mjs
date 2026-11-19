@@ -33,6 +33,8 @@ const errors = []
 page.on('pageerror', (e) => errors.push(e.message))
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
 
+// The preview server has no sync endpoint; answer uploads here so they don't log errors.
+await page.route('**/api/sync**', (route) => route.fulfill({ status: 200, json: { ok: true } }))
 await page.goto(new URL('#/log', appUrl).href)
 // "About my log", like the booklet cover.
 await page.getByLabel(log.about.name).fill('Maya')

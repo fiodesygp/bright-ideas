@@ -25,3 +25,9 @@ dist-ssr
 
 # Screenshots from scripts/checks
 scripts/checks/shots/
+
+# Secrets (keep .env.example)
+.env
+.env.*
+!.env.example
+.vercel

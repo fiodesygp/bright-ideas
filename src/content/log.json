@@ -7,7 +7,7 @@
     "note": "What happened? (optional)",
     "noteHelp": "Try starting with \"I noticed…\", \"I changed…\" or \"Next I want to try…\".",
     "photo": "Photo (optional)",
-    "photoHelp": "Take a photo of your plant or your build. Leave out faces and names. Photos stay on this device.",
+    "photoHelp": "Take a photo of your plant or your build. Leave out faces and names. Photos are saved on this device and sent to the project team.",
     "notePlaceholder": "I noticed…",
     "photoAdd": "Add a photo",
     "photoAddHint": "Opens your camera or your photos",
@@ -47,7 +47,7 @@
     "title": "About my log",
     "intro": "Like the cover of your booklet. Fill this in before your first entry.",
     "name": "My name",
-    "nameHelp": "Use your first name or a nickname. It stays on this device.",
+    "nameHelp": "Use your first name or a nickname. It's saved on this device and sent to the project team with your log.",
     "nameError": "Enter your first name or a nickname.",
     "plant": "My plant (optional)",
     "plantHelp": "For example, basil.",
@@ -68,7 +68,7 @@
     "addSomeone": "Add someone",
     "deleteLog": "Delete {name}'s log",
     "deleteTitle": "Delete {name}'s log?",
-    "deleteText": "This deletes {name}'s name and their {count} and photos from this device. Other people's logs stay. You cannot undo this.",
+    "deleteText": "This deletes {name}'s name and their {count} and photos from this device. It also removes the name, notes and photos from the project team's copy. Other people's logs stay. You cannot undo this.",
     "deleteTip": "Tip: save a PDF first if you want to keep a copy.",
     "pdfName": "My name",
     "pdfPlant": "My plant",
@@ -84,5 +84,10 @@
   "count": {
     "entry": "entry",
     "entries": "entries"
+  },
+  "sync": {
+    "done": "All entries uploaded",
+    "waiting": "{n} waiting to upload",
+    "offline": "Offline — will upload later"
   }
 }

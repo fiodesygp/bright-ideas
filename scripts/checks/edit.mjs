@@ -4,12 +4,12 @@
 // and axe finds no problems.
 //
 // usage: see README, "Optional browser checks"
-import { APP_URL as BASE, AxeBuilder, chromium, makePhoto, startLog } from './deps.mjs'
+import { APP_URL as BASE, AxeBuilder, launchWithSync, makePhoto, startLog } from './deps.mjs'
 
 let fails = 0
 const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++ }
 
-const browser = await chromium.launch()
+const browser = await launchWithSync()
 const page = await (await browser.newContext({ viewport: { width: 360, height: 900 } })).newPage()
 const errs = []
 page.on('pageerror', (e) => errs.push(e.message))
