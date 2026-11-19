@@ -1,0 +1,21 @@
+.circuit-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+/* Diagrams sit on light paper in both themes, so their colors are fixed. */
+.part-label { font-size: 14px; font-weight: 700; fill: var(--paper-ink); }
+.part-label-inverse { fill: #ffffff; }
+
+.wire-line { fill: none; stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+.wire-pos .wire-line { stroke: var(--wire-red); }
+.wire-neg .wire-line { stroke: var(--wire-black); }
+.wire-pos .wire-clip { fill: var(--wire-red); }
+.wire-neg .wire-clip { fill: var(--wire-black); }
+.wire-pill { fill: #ffffff; stroke-width: 2.5; }
+.wire-pos .wire-pill { stroke: var(--wire-red); }
+.wire-neg .wire-pill { stroke: var(--wire-black); }
+.wire-pill-text { font-size: 15px; font-weight: 800; fill: var(--paper-ink); }

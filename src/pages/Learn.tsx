@@ -1,13 +1,29 @@
+import { useEffect } from 'react'
+import { useLocation } from 'react-router'
 import { PageHeader } from '../components/PageHeading'
+import CircuitCard from '../components/learn/CircuitCard'
 import FlipCard from '../components/learn/FlipCard'
 import QuickCheck from '../components/learn/QuickCheck'
 import { PartThumbnail } from '../components/diagram/parts'
 import { AlertIcon, BulbIcon } from '../components/Icons'
-import { learn, type ComponentCard } from '../content'
+import { connectContent, learn, type ComponentCard } from '../content'
 import '../components/chips.css'
 import './Learn.css'
 
+/** The "How to connect" section; #/connect links land here (see App). */
+export const CONNECT_HASH = '#how-to-connect'
+
 export default function Learn() {
+  const { hash } = useLocation()
+
+  // Arriving at #/learn#how-to-connect: show that section and move focus to its heading.
+  useEffect(() => {
+    if (hash !== CONNECT_HASH) return
+    const heading = document.getElementById('how-to-connect')
+    heading?.scrollIntoView({ block: 'start' })
+    heading?.focus({ preventScroll: true })
+  }, [hash])
+
   return (
     <div className="page learn-page">
       <PageHeader title="Learn the Components">
@@ -21,6 +37,22 @@ export default function Learn() {
             <li key={c.id} className="learn-item">
               <PartCard card={c} />
               <QuickCheck check={c.quickCheck} />
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="section connect-section" aria-labelledby="how-to-connect">
+        <h2 id="how-to-connect" tabIndex={-1}>{connectContent.title}</h2>
+        <p className="page-intro">{connectContent.intro}</p>
+        <div className="callout callout-tip">
+          <AlertIcon />
+          <p><strong>{connectContent.wireRuleLabel}</strong> {connectContent.wireRule}</p>
+        </div>
+        <ul className="circuit-list">
+          {connectContent.circuits.map((c, i) => (
+            <li key={c.id}>
+              <CircuitCard circuit={c} number={i + 1} />
             </li>
           ))}
         </ul>

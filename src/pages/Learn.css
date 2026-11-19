@@ -98,3 +98,79 @@
 .quick-check fieldset:disabled .chip { cursor: default; }
 .quick-check fieldset:disabled .chip:not(:has(input:checked)) { opacity: 0.7; }
 .qc-result:empty { display: none; }
+
+/* ---------- How to connect ---------- */
+
+.connect-section h2:focus { outline: none; }
+.connect-section .callout { margin-bottom: 16px; }
+.circuit-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.circuit-card {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+}
+.circuit-card[open] { border-color: var(--primary); }
+.circuit-card summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-height: var(--tap);
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius);
+}
+.circuit-card summary::-webkit-details-marker { display: none; }
+/* Open/closed arrow, drawn so it follows the theme */
+.circuit-card summary::after {
+  content: '';
+  flex: none;
+  align-self: center;
+  width: 10px;
+  height: 10px;
+  margin-left: auto;
+  border-right: 3px solid var(--primary);
+  border-bottom: 3px solid var(--primary);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
+.circuit-card[open] summary::after { transform: rotate(-135deg); }
+.circuit-card summary:hover { background: var(--primary-soft); }
+.circuit-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 800;
+}
+.circuit-head { display: grid; gap: 2px; }
+.circuit-head h3 { margin: 0; }
+.circuit-summary { color: var(--ink-2); }
+.circuit-body {
+  display: grid;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+.circuit-body h4 { margin: 8px 0 0; font-size: 1rem; color: var(--primary); }
+.circuit-body .circuit-diagram { max-width: 420px; }
+.circuit-parts,
+.circuit-trouble { margin: 0; padding-left: 22px; display: grid; gap: 4px; }
+.circuit-steps { margin: 0; padding-left: 26px; display: grid; gap: 8px; }
+.circuit-step-safety {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--tip-soft);
+  border: 2px solid var(--tip-border);
+}
+.circuit-step-safety svg { vertical-align: -5px; margin-right: 6px; }
+.circuit-body .callout p { margin: 0; }

@@ -1,5 +1,5 @@
-// Checks the Simulation page end to end: the bottom nav and old links
-// (#/sun-day, #/connect), playing with no name (nothing saved or uploaded),
+// Checks the Simulation page end to end: the bottom nav and the old
+// #/sun-day link, playing with no name (nothing saved or uploaded),
 // then with a name: choosing a design, predicting, running the day
 // (animation, Skip, focus and announcements), the Sun Score and hints, a
 // challenge with locked choices, reduced motion, "My simulation runs"
@@ -79,8 +79,8 @@ const browser = await chromium.launch()
   ok(await page.evaluate(() => document.activeElement?.tagName) === 'H1' && (await focusedText(page)) === 'Simulation', 'Home card opens Simulation with focus on its heading')
   ok(await page.locator('.tabbar a[aria-current="page"]').innerText() === 'Simulation', 'nav: Simulation tab is current')
 
-  // Old links land on Simulation.
-  for (const old of ['#/sun-day', '#/connect', '#/connect/full-system']) {
+  // The old Sun Day link lands on Simulation (#/connect goes to Learn: see learn.mjs).
+  for (const old of ['#/sun-day']) {
     await page.goto(BASE + old)
     await page.waitForSelector('.sd-scene')
     ok(new URL(page.url()).hash === '#/simulation', `${old} redirects to #/simulation`)

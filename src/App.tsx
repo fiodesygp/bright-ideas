@@ -5,7 +5,7 @@ import { SettingsProvider } from './data/settings'
 import Home from './pages/Home'
 import Log from './pages/Log'
 import Dashboard from './pages/Dashboard'
-import Learn from './pages/Learn'
+import Learn, { CONNECT_HASH } from './pages/Learn'
 import Settings from './pages/Settings'
 import SunDay from './pages/SunDay'
 import NotFound from './pages/NotFound'
@@ -24,9 +24,9 @@ export default function App() {
               <Route path="log/dashboard" element={<Dashboard />} />
               <Route path="learn" element={<Learn />} />
               <Route path="simulation" element={<SunDay />} />
-              {/* Old links: Sun Day was renamed, and Simulation replaced Connect and its circuits. */}
+              {/* Old links: Sun Day was renamed; Connect's circuits now live in Learn, under "How to connect". */}
               <Route path="sun-day" element={<Navigate to="/simulation" replace />} />
-              <Route path="connect/*" element={<Navigate to="/simulation" replace />} />
+              <Route path="connect/*" element={<Navigate to={{ pathname: '/learn', hash: CONNECT_HASH }} replace />} />
               <Route path="settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Route>

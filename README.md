@@ -16,8 +16,8 @@ A companion web app for the **miniAgriPV kit**. 7th graders build a mini agrivol
 
 1. **Planting Log**: an "About my log" card like the booklet cover (name, plant, start date), then an entry form (optional photo, date, height, the booklet's Soil and Water checklist, and notes) plus a list of recent entries. Several students can share a device with **Who's logging?**.
 2. **My Dashboard**: summary cards, checklist counts ("Watered on 3 of 5 days"), a height-over-time chart, a photo timeline, and the full entry list with edit and delete. Export it as a tagged, text-based PDF (PDF/UA) or as a PNG image.
-3. **Learn the Components**: flip cards for each kit part and four big-idea cards, plus a quick-check question on each part card (with a hint and retry, no score).
-4. **Simulation** (`#/simulation`, in the bottom bar and on Home): brought over from the Same Sun app. Students choose a plant, weather, panel size and height, and whether the fan and pump run; predict how the plant will grow compared with one in full sun, and why; run a day or a week with a moving scene and gauges; then get a Sun Score (food + energy, out of 200) with feedback, hints, and three challenges. Anyone can play without a name. When a learner is set on the Planting Log (**Who's logging?**), every run is saved under **My simulation runs** for them and uploaded; with no learner, nothing is saved or uploaded, and the page says to add a name on the Planting Log. Old `#/sun-day` and `#/connect` links open the Simulation. The numbers are estimates for learning, not measurements; every model number is in `src/sim/model.json`.
+3. **Learn the Components**: flip cards for each kit part, with a quick-check question on each (a hint and retry, no score); **How to connect**, with the wire-color rule and two circuits to build (the fan, then the full miniAgriPV system), each a card that opens to show what you need, a diagram of the finished circuit, numbered steps, what success looks like and three troubleshooting tips; and four big-idea cards. Old `#/connect` links open this section.
+4. **Simulation** (`#/simulation`, in the bottom bar and on Home): brought over from the Same Sun app. Students choose a plant, weather, panel size and height, and whether the fan and pump run; predict how the plant will grow compared with one in full sun, and why; run a day or a week with a moving scene and gauges; then get a Sun Score (food + energy, out of 200) with feedback, hints, and three challenges. Anyone can play without a name. When a learner is set on the Planting Log (**Who's logging?**), every run is saved under **My simulation runs** for them and uploaded; with no learner, nothing is saved or uploaded, and the page says to add a name on the Planting Log. Old `#/sun-day` links open the Simulation. The numbers are estimates for learning, not measurements; every model number is in `src/sim/model.json`.
 
 Kit-specific facts (polarity, wire colors, resistor value, panel power) must be checked against the real kit. See [FACILITATOR-CHECKLIST.md](FACILITATOR-CHECKLIST.md).
 
@@ -36,6 +36,7 @@ Most learner-facing text lives in `src/content/` (the rest of the Settings page 
 | `sunday.json` | All Simulation text: steps, choices, gauges, prediction, results, feedback rules and hints, challenges, and "My simulation runs" |
 | `settings.json` | Settings text about learners: "Remove my name and log", its confirmation, the Clear all data warning, and the shared-device facilitator note |
 | `components.json` | Part cards (with quick checks) and concept cards |
+| `learn.json` | Learn's "How to connect" section (`connect`): the wire-color rule and the two circuits, with parts, steps, success text, troubleshooting and the diagram (parts placed at x/y between x=30 and x=330, wires between terminals such as `panel.pos` or `led.anode`, with `side` `"+"` or `"-"`, and optional `via` corner points). Each diagram's text alternative is built from this data |
 
 To use a real photo on a part card, put the image in `public/photos/` and set `"photo": "photos/led.jpg"`. Write a matching `imageAlt`.
 
@@ -59,7 +60,8 @@ Stack: React, TypeScript, Vite, React Router (HashRouter, so refreshes work on G
 
 - `logform.mjs` checks the Log form at 360, 768 and 1280 px in light and dark mode, with and without a photo, and with old entries already saved. It covers field order, the "Photo added", "Photo removed" and "Saved" announcements, focus, axe (WCAG 2.2 AA), 44 px targets, sideways scrolling, and reduced motion.
 - `edit.mjs` checks editing an entry on the Dashboard: field order, checklist ticks, Remove photo, the "Changes saved" announcement, and focus returning to the Edit button.
-- `sunday.mjs` checks the Simulation page: the bottom nav at 320 px and the old `#/sun-day` and `#/connect` links, playing with no name (the run works, nothing is saved or uploaded), then adding a name and choosing a design (keyboard too), predicting, running the day (announcements, focus on Skip, then on the Sun Score), hints, a challenge with locked choices, reduced motion, "My simulation runs" (newest first, per learner), the upload to the local test server, and axe in light and dark at 320 and 1280 px. It needs the same build as `sync.mjs` (below).
+- `learn.mjs` checks Learn's "How to connect": where the section sits, the two circuit cards (closed at first, opened and closed by keyboard, one diagram each with a text alternative, steps and tips), old `#/connect` links landing on the section, the bottom nav, and axe in light and dark at 320 and 1280 px. It runs against any build, like the three above.
+- `sunday.mjs` checks the Simulation page: the bottom nav at 320 px and the old `#/sun-day` link, playing with no name (the run works, nothing is saved or uploaded), then adding a name and choosing a design (keyboard too), predicting, running the day (announcements, focus on Skip, then on the Sun Score), hints, a challenge with locked choices, reduced motion, "My simulation runs" (newest first, per learner), the upload to the local test server, and axe in light and dark at 320 and 1280 px. It needs the same build as `sync.mjs` (below).
 - `learners.mjs` checks "About my log" and shared devices at the same sizes and themes: a fresh device, two learners with their own entries, switching ("Switched to …'s log"), renaming, the Dashboard checklist counts, deleting a learner, Settings → Remove my name and log, and old entries going to the first learner.
 
 With the dev server running (`npm run dev`), in a second terminal:
@@ -69,9 +71,10 @@ npx -y playwright@1.64.1 install chromium   # once, downloads the browser
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/logform.mjs
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/edit.mjs
 npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/learners.mjs
+npx -y -p playwright@1.64.1 -p @axe-core/playwright@4.14.0 node scripts/checks/learn.mjs
 ```
 
-These three answer the upload endpoint with "ok" themselves. `sync.mjs` checks the real sync instead, against a fake Supabase (`sync-server.mjs`, in memory) and `api/sync.ts` itself on port 5180. It covers backfill of data saved by earlier versions (v1, v2, and v3 with records still queued), the device id, simulation run uploads and deletes, offline save then upload on reconnect, edits (the photo is uploaded again only when it changed), entry and learner deletes, Clear all data, the status line and its announcements, and the endpoint's checks on what it accepts. It needs a build that posts to that port, served on port 5173:
+`logform.mjs`, `edit.mjs` and `learners.mjs` answer the upload endpoint with "ok" themselves. `sync.mjs` checks the real sync instead, against a fake Supabase (`sync-server.mjs`, in memory) and `api/sync.ts` itself on port 5180. It covers backfill of data saved by earlier versions (v1, v2, and v3 with records still queued), the device id, simulation run uploads and deletes, offline save then upload on reconnect, edits (the photo is uploaded again only when it changed), entry and learner deletes, Clear all data, the status line and its announcements, and the endpoint's checks on what it accepts. It needs a build that posts to that port, served on port 5173:
 
 ```sh
 VITE_SYNC_URL=http://localhost:5180/api/sync npm run build
@@ -85,7 +88,7 @@ Each script prints PASS or FAIL per check and ends with `ALL PASSED` or the numb
 
 ## Design tokens
 
-Every color is a CSS variable in `src/index.css`, with a light set and a matching dark set. The dark set is used when Settings → Theme is "Dark", or when it is "System" and the device is dark. The brand colors (`--brand-green`, `--brand-lime`, `--brand-teal`) are for decoration only. They are about 2:1 on white, so text and buttons use the deeper `--primary` and `--teal-ink` shades, which meet WCAG AA. The part drawings on the Learn cards always draw on light `--paper`, so the red and black wires match the real kit in both themes.
+Every color is a CSS variable in `src/index.css`, with a light set and a matching dark set. The dark set is used when Settings → Theme is "Dark", or when it is "System" and the device is dark. The brand colors (`--brand-green`, `--brand-lime`, `--brand-teal`) are for decoration only. They are about 2:1 on white, so text and buttons use the deeper `--primary` and `--teal-ink` shades, which meet WCAG AA. The part drawings and circuit diagrams in Learn always draw on light `--paper`, so the red and black wires match the real kit in both themes.
 
 ## Checking PDF accessibility
 
